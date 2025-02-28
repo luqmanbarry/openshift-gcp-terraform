@@ -1,0 +1,9 @@
+enableAutoScale: true
+
+cluster:
+  utilizationThreshold: "0.5" # Delete node if utilization is at/below 50%.
+
+machineSets: # List of MachineSets you want to target for cluster-autoscaling
+  - name: aro-cluster-pzdh4-n6lsf-worker-eastus1 # # Always change per cluster - oc get machinesets --all-namespaces
+    minReplicas: 1 
+    maxReplicas: 10 # maxReplicas = (maxNodesCount - controlPlaneNodesCount) / azPerRegion

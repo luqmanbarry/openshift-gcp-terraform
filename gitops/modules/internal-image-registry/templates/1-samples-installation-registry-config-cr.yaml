@@ -1,0 +1,13 @@
+apiVersion: samples.operator.openshift.io/v1
+kind: Config
+metadata:
+  name: cluster
+  annotations:
+    # argocd.argoproj.io/sync-wave: "1"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "1"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  architectures:
+  - x86_64
+  samplesRegistry: "registry.redhat.io"

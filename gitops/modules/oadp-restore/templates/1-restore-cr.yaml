@@ -1,0 +1,23 @@
+{{ if .Values.enable }}
+{{ range $backupItem := .Values.backups }}
+---
+apiVersion: velero.io/v1
+kind: Restore
+metadata:
+  name: {{ $backupItem }}
+  namespace: {{ $.Values.namespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "1"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "1"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  backupName: {{ $backupItem }}
+  excludedResources:
+  - nodes
+  - events
+  - events.events.k8s.io
+  restorePVs: true
+{{ end }}
+{{ end }}

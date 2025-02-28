@@ -1,0 +1,11 @@
+idp:
+  aad:
+    enable: true
+    name: aad-group-sync
+    clientID: 306bc43a-ca80-4591-b13d-5453694f7cdd
+    clientSecretKeyVaultSecretName: openshift-aroclassic102-aad-sp-client-secret
+    tenantID: 64dc69e4-d083-49fc-9569-ebece1dd1408
+    syncCronSchedule: "* * * * *"
+    # List of groups to sync
+    groups:
+      - lbarry-aro-admins

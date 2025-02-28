@@ -1,0 +1,11 @@
+clusterName: changeme
+namespace: openshift-adp
+
+
+enabled: true
+defaultVolumesToFsBackup: true # Whether or not use snapshots ofr FileSystem Backup for Volumes
+projects: # List projects/namespaces to backup
+  - namespace: changeme
+    paused: false
+    cronSchedule: "0 0 * * *" # Every day at midnight - update accordingly for other TZ
+    backupRetentionPeriod: 360h # 15 days

@@ -1,0 +1,6 @@
+clusterType: "ARO" # Possible Values: "OSD", "ROSA", "ARO"
+upgradeStartTime: "2024-12-18T00:00:00Z" # Command: `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+nodeDrainTimeout: 60 # in seconds
+desired: # Run `oc get clusterversion -o yaml` to get the supported channels and versions
+  channel: "stable-4.15"
+  version: "4.15.27"

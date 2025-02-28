@@ -1,0 +1,14 @@
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: {{ .Values.operators.kiali.name }}
+  namespace: {{ .Values.operators.kiali.namespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "21"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "21"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  targetNamespaces: []

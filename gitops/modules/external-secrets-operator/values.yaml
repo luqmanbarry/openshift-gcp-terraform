@@ -1,0 +1,12 @@
+namespace: external-secrets-operator
+clusterName: "changeme"
+keyVaultName: "changeme"
+environmentType: PublicCloud # PublicCloud, USGovernmentCloud, ChinaCloud, GermanCloud
+cluster_sp_k8s_secret_name: "cluster-sp-secret"
+tf_resources_namespace: "ocp-tf-resources"
+provider:
+  azurekv: # Key Vault ServicePrincipal credentials
+    environmentType: PublicCloud # PublicCloud, USGovernmentCloud, ChinaCloud, GermanCloud
+    tenantID: changeme
+    vaultURL: "https://my-keyvault-name.vault.azure.net"
+    

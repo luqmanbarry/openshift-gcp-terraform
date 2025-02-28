@@ -1,0 +1,21 @@
+{{ range $assignment := .Values.rbac.assignments }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: "{{ $assignment.ocpRole }}-{{ $assignment.groupName }}"
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "0"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "0"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+subjects:
+  - kind: Group
+    name: {{ $assignment.groupName }}
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: {{ $assignment.ocpRole }}
+  apiGroup: rbac.authorization.k8s.io
+{{ end }}

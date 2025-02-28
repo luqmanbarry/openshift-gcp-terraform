@@ -1,0 +1,39 @@
+---
+# This could be replaced by a CronJob
+# Add logic you want executed here.
+# Left empty for future use
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "argocd-apps-job"
+  namespace: openshift-gitops
+  annotations:
+    managed-by: argocd.argoproj.io
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  backoffLimit: 0
+  parallelism: 1
+  completions: 3
+
+  template:
+    spec:
+      serviceAccountName: openshift-gitops-argocd-application-controller
+      serviceAccount: openshift-gitops-argocd-application-controller
+      restartPolicy: OnFailure
+      containers:
+      - name: "argocd-apps-job"
+        image: registry.redhat.io/openshift4/ose-tools-rhel9
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: "RuntimeDefault"
+          capabilities:
+            drop: [ALL]
+        command:
+        - /bin/sh
+        - -c
+        - |
+            set -e
+            echo "==> Add logic you want executed here."
+            echo "==> Left empty for future use."
+      restartPolicy: Never

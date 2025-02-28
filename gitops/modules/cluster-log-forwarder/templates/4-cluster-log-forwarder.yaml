@@ -1,0 +1,30 @@
+---
+apiVersion: logging.openshift.io/v1
+kind: ClusterLogForwarder
+metadata:
+  name: instance
+  namespace: openshift-logging
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "4"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "4"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  outputs:
+    - name: splunk-receiver
+      secret:
+        name: {{ .Values.hecKeyVaultSecretName }}
+      type: splunk 
+      url: {{ .Values.splunk.endpoint }}
+      splunk:
+        indexName: {{ .Values.splunk.indexName }}
+  pipelines: 
+    - inputRefs:
+        - application
+        - infrastructure
+        - audit
+      name: splunk-receiver
+      outputRefs:
+        - splunk-receiver
+      parse: json

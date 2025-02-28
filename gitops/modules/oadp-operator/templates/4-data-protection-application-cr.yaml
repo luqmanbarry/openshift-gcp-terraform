@@ -1,0 +1,83 @@
+---
+apiVersion: oadp.openshift.io/v1alpha1
+kind: DataProtectionApplication
+metadata:
+  name:  {{ .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "4"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "4"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  # Azure Provider: https://github.com/vmware-tanzu/velero-plugin-for-microsoft-azure
+  # AWS Provider: https://github.com/vmware-tanzu/velero-plugin-for-aws
+  # GCP Provider: https://github.com/vmware-tanzu/velero-plugin-for-gcp
+  backupImages: true
+  configuration:
+    velero:
+      podConfig:
+        resourceAllocations:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+      resourceTimeout: 10m
+      client-burst: 1000
+      client-qps: 500
+      itemOperationSyncFrequency: "10s"
+      defaultItemOperationTimeout: 1h
+      defaultVolumesToFSBackup: {{ .Values.defaultVolumesToFsBackup }}
+      {{ if not .Values.defaultVolumesToFsBackup }}
+      defaultSnapshotMoveData: true
+      {{ end }}
+      defaultPlugins:
+        - azure
+        - openshift
+        - csi
+    nodeAgent:
+      enable: true
+      uploaderType: kopia
+      podConfig:
+        resourceAllocations:
+          limits:
+            cpu: "1"
+            memory: 4Gi
+          requests:
+            cpu: 50m
+            memory: 200Mi
+  backupLocations:
+    - name: "default"
+      velero:
+        provider: azure
+        default: true
+        backupSyncPeriod: 1m
+        config:
+          resourceGroup: {{ .Values.storage.resourceGroup }}
+          storageAccount: {{ .Values.storage.storageAccount }}
+          storageAccountURI: "{{ .Values.storage.storageAccountBlobURI }}"
+          blockSizeInBytes: "10485760" # 10MB
+          useAAD: "true"
+        credential:
+          key: {{ .Values.veleroSecretKeyFile }}
+          name: {{ .Values.storage.clientSecretKVSecretName | lower }}
+        objectStorage:
+          bucket: {{ .Values.storage.storageContainer }}
+          prefix: {{ .Values.clusterName }}
+  snapshotLocations:
+    - name: "default"
+      velero:
+        provider: azure
+        default: true
+        config:
+          apiTimeout: 30m
+          resourceGroup: {{ .Values.storage.resourceGroup }}
+          incremental: "true"
+        credential:
+          key: {{ .Values.veleroSecretKeyFile }}
+          name: {{ .Values.storage.clientSecretKVSecretName | lower }}
+        volumeSnapshotClassName: {{ .Values.storage.volumeSnapshotClassName }}
+        snapshotLocation: {{ .Values.storage.storageContainer }}

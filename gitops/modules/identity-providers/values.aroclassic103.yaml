@@ -1,0 +1,15 @@
+keyVaultName: stig0015-dev-vault
+idp:
+  openid:
+    enable: true
+    providers:
+      - type: AAD
+        enable: true
+        name: AAD
+        # Set CallBack URL on SP - Pattern: https://oauth-openshift.apps.aroclassic102-stig0015.eastus.aroapp.io/oauth2callback/AAD
+        clientID: xxxxxxxx
+        clientSecretKeyVaultSecretName: openshift-aroclassic102-aad-sp-client-secret
+        issuerURL: https://login.microsoftonline.com/xxxxxxxx/v2.0
+  
+    
+  

@@ -1,0 +1,8 @@
+# Ref: https://access.redhat.com/solutions/6547281
+defaultRoute: true
+disableRedirect: true
+# storage:
+#   azure:
+#     accountName: CHANGE_ME
+#     container: image-registry
+#     cloudName: AzurePublicCloud

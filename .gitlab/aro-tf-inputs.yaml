@@ -1,0 +1,94 @@
+spec:
+  inputs:
+    azure_cloud_environment:
+      options:
+        - usgovernment
+        - public
+    subscription_id:
+      options:
+        - b510a938-29e2-4493-aa2a-d4eba738caa4
+    platform_environment:
+      options:
+        - dev
+        - prod
+    organization:
+      type: string
+      default: navfac-mission-owner
+    cost_center:
+      type: string
+      default: 8043227
+    location:
+      options:
+        - USGovVirgina
+        - eastus
+    private_cluster:
+      type: boolean
+      default: true
+      description: Private or Public cluster ?
+    fips_enabled:
+      type: boolean
+      default: true
+      description: Enable FIPS modules ? (true or false)
+    cluster_aad_app_name:
+      type: string
+      default: DsoOpenShiftD2
+    key_vault_name:
+      type: string
+      default: dso-aro-keyvault-p1
+    key_vault_resource_group:
+      type: string
+      default: aro-prod
+    cluster_aad_key_vault_secret:
+      type: string
+      default: changeme
+    vnet_name:
+      type: string
+      default: vnet-navfac-nitc-hosting-usgovvirginia-01
+    vnet_resource_group:
+      type: string
+      default: rg-navfac-nitc-hosting-usgovvirginia-01
+    main_subnet_name:
+      type: string
+      default: openshift-master-d2
+    worker_subnet_name:
+      type: string
+      default: openshift-worker-d2
+    main_vm_size:
+      type: string
+      default: "Standard_D8s_v5"
+    worker_vm_size:
+      type: string
+      default: "Standard_D8s_v5"
+    worker_node_count:
+      type: int
+      default: 3
+    worker_disk_size_gb:
+      type: int
+      default: 200
+    use_azure_provided_domain:
+      type: boolean
+      default: true
+      description: Use Azure provided domain ? (true or false)
+    root_dns_domain:
+      type: string
+      default: changeme
+    base_dns_name:
+      type: string
+      default: changeme
+    base_dns_zone_resource_group:
+      type: string
+      default: changeme
+    tfstate_storage_account_name:
+      type: string
+      default: changeme
+    tfstate_resource_group:
+      type: string
+      default: changeme
+    tfstate_storage_container:
+      type: string
+      default: changeme
+    TF_LOG:
+      options:
+        - info
+        - debug
+        - trace

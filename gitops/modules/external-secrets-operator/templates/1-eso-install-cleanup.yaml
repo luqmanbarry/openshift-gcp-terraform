@@ -1,0 +1,66 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "eso-install-cleanup"
+  namespace: openshift-gitops
+  annotations:
+    managed-by: argocd.argoproj.io
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+    "helm.sh/hook": "post-delete"
+    "helm.sh/hook-weight": "1"
+spec:
+  backoffLimit: 0
+  parallelism: 1
+  completions: 1
+
+  template:
+    spec:
+      serviceAccountName: openshift-gitops-argocd-application-controller
+      serviceAccount: openshift-gitops-argocd-application-controller
+      restartPolicy: OnFailure
+      containers:
+      - name: "eso-install-cleanup"
+        image: registry.redhat.io/openshift4/ose-tools-rhel9
+        resources:
+          limits:
+            cpu: '200m'
+            memory: 512Mi
+          requests:
+            cpu: 25m
+            memory: 50Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: "RuntimeDefault"
+          capabilities:
+            drop: [ALL]
+        command:
+        - /bin/sh
+        - -c
+        - |
+            set -e
+            echo "==> Cleanup install namespace"
+            oc delete -n {{ .Values.namespace }} clusterserviceversion --all || true
+            oc delete -n {{ .Values.namespace }} subscription --all || true
+            oc delete -n {{ .Values.namespace }} operatorgroup --all || true
+            oc delete -n {{ .Values.namespace }} installplan --all || true
+            oc patch  -n {{ .Values.namespace }} operatorconfig.operator.external-secrets.io cluster --type=merge -p '{"metadata":{"finalizers":[]}}' || true
+            oc delete -n {{ .Values.namespace }} operatorconfig cluster || true &
+            oc patch  -n {{ .Values.namespace }} operatorconfig.operator.external-secrets.io cluster --type=merge -p '{"metadata":{"finalizers":[]}}' || true
+            
+            echo "==> Deleting all instacnes of ESO operands"
+            oc delete ClusterExternalSecret --all --all-namespaces || true
+            oc delete ClusterSecretStore --all --all-namespaces || true
+            oc delete ExternalSecret --all --all-namespaces || true
+            oc delete SecretStore --all --all-namespaces || true
+            oc delete ExternalSecret --all --all-namespaces || true
+            
+            echo "==> Deleting all CRDs associated"
+            oc delete customresourcedefinition/clusterexternalsecrets.external-secrets.io || true
+            oc delete customresourcedefinition/clustersecretstores.external-secrets.io || true
+            oc delete customresourcedefinition/externalsecrets.external-secrets.io || true
+            oc delete customresourcedefinition/operatorconfigs.operator.external-secrets.io || true
+            oc delete customresourcedefinition/secretstores.external-secrets.io || true
+            oc delete customresourcedefinition/webhooks.generators.external-secrets.io || true
+      restartPolicy: Never

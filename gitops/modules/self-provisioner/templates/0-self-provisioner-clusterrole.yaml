@@ -1,0 +1,23 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: self-provisioners
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "0"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "0"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+    rbac.authorization.kubernetes.io/autoupdate: '{{ .Values.disableSelfProvisioner }}'
+{{ if not .Values.disableSelfProvisioner }}
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: 'system:authenticated:oauth'
+{{ else }}
+subjects: null
+{{ end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: self-provisioner

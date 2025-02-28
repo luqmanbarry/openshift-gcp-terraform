@@ -1,0 +1,36 @@
+---
+apiVersion: operator.external-secrets.io/v1alpha1
+kind: OperatorConfig
+metadata:
+  name: cluster
+  namespace: {{ .Values.namespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "4"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "4"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  # this must be set to false when using olm
+  installCRDs: false
+  crds:
+    createClusterExternalSecret: true
+    createClusterSecretStore: true
+  prometheus:
+    enabled: true
+    service:
+      port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 512Mi
+  serviceAccount:
+    create: true
+    name: ''
+  webhook:
+    create: true
+  certController:
+    create: true

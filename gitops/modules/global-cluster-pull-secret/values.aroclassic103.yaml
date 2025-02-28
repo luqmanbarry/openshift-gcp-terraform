@@ -1,0 +1,3 @@
+
+keyVaultName: stig0015-dev-vault
+pullSecretKeyVaultSecretName: private-registries-pull-secrets

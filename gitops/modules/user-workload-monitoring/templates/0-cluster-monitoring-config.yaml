@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "0"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "0"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+data:
+  config.yaml: |-
+
+    alertmanagerMain:
+      enableUserAlertmanagerConfig: true
+      retention: "{{ .Values.alertmanagerMain.retention }}"
+    enableUserWorkload: {{ .Values.enableUserWorkload }}
+    prometheus:
+      retention: "{{ .Values.prometheus.retention }}"
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: "{{ .Values.prometheus.storageCapacity }}"
+          storageClassName: "{{ .Values.prometheus.storageClassName }}"
+          volumeMode: "{{ .Values.prometheus.volumeMode }}"
+    thanosRuler:
+      retention: "{{ .Values.thanosRuler.retention }}"
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: "{{ .Values.thanosRuler.storageCapacity }}"
+          storageClassName: "{{ .Values.thanosRuler.storageClassName }}"
+          volumeMode: "{{ .Values.thanosRuler.volumeMode }}"

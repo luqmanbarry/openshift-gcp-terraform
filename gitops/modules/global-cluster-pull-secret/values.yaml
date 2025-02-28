@@ -1,0 +1,5 @@
+keyVaultName: changeme
+pullSecretKeyVaultSecretName: changeme # KV Secret content should be json formatted
+resourceNamePrefix: 'day2-gitops'
+patchSchedule: "*/5 * * * *" # TODO: Change this to once (0 5 * * *) a day after testing
+ocpVersion: v4.15

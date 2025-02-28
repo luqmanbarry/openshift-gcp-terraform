@@ -1,0 +1,22 @@
+---
+apiVersion: config.openshift.io/v1
+kind: Image
+metadata:
+  annotations:
+    # argocd.argoproj.io/sync-wave: "2"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "2"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+  name: cluster
+spec:
+  additionalTrustedCA:
+    name: {{ .Values.registriesCertsConfigMap }}
+  registrySources: 
+    allowedRegistries:
+      # Default registries are required by OpenShift - DO NOT CHANGE
+      - quay.io
+      - registry.redhat.io
+      - registry.connect.redhat.com
+      - image-registry.openshift-image-registry.svc:5000
+      # User provider registries - Provide list in values.<env>.yaml files
+      {{ toYaml .Values.allowList | nindent 6 }}
