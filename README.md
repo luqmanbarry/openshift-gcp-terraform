@@ -1,4 +1,4 @@
-# ARO Classic cluster automation
+# OSD Classic on Google Cloud cluster automation
 
 ## Pre-Requisites
 
@@ -6,32 +6,34 @@
 - [Detailed List](https://cloud.redhat.com/experts/aro/prereq-list/)
 
 ### Execution Level
-- User/ServicePrincipal with permission to:
-  - Create ResourceGroups, VirtualNetworks, Subnets, VMs..etc
-  - Create Storage Account
-  - Create, Delete ARO
-  - Create a DNS Zone and add A, DNS records to it
-- Virtual Network (VNet) 
+- User/ServiceAccount with permission to:
+  - Create Projects, VPCs, Subnets, Compute resources..etc
+  - Create Storage Bucket
+  - Create, Delete OSD
+  - Create a DNS Zone and add A, NS records to it 
 - Subnets tagged with `cluster_name`
   - `x.x.x.x/24` CIDR for Multi-AZ
   - `x.x.x.x/25` CIDR for Single-AZ
   
 - Optional: Base DNS Domain name (ie: sama-wat.com) - This is required unless you're using the Azure CLI.
 - Optional: Base DNS Zone deployed with resulting name servers registered to the domain registrar. It's name or subdomain name should match the base_dns_zone name.
-- ARO [pull-secret](https://console.redhat.com/openshift/downloads#tool-pull-secret)
-  - Place the pull-secret json string in Azure KeyVault and set the `TF_VAR_ocp_pull_secret_kv_secret` with the name of the KV secret name.
+- OSD [pull-secret](https://console.redhat.com/openshift/downloads#tool-pull-secret)
+  - Place the pull-secret json string in Secret Manager secret and set the `TF_VAR_ocp_pull_secret_secret_name, TF_VAR_ocp_pull_secret_secret_project` with the secret name and project. 
   
-    For example: 
-    ```sh
-    export TF_VAR_ocp_pull_secret_kv_secret="aro-pull-secret"
-    ```
-- Network security group inbound rules defined; this is to allow traffic from parties that need to connect to the cluster. For example, the CI/CD platform hosts, and any other IP ranges that will try to reach the cluster.
+  Since these variables are pretty much constant across departments and clusters, they can defined in the [admin.tfvars](./tfvars/admin/admin.tfvars) file.
+  
+  For example: 
+  ```sh
+  export TF_VAR_ocp_pull_secret_secret_name="osd-gcp-pull-secret"
+  export TF_VAR_ocp_pull_secret_secret_project="example-gcp-project"
+  ```
+- Firewall inbound rules defined; this is to allow traffic from parties that need to connect to the cluster. For example, the CI/CD platform hosts, and any other IP ranges that will need to access the cluster.
 
 ### Software Packages
 - [GoLang](https://go.dev/doc/install) - 1.20.x or greater
 - [Terraform](https://developer.hashicorp.com/terraform/install#linux) 1.5.x or greater
 - Up to date [Openshift Client](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest)
-- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- [GCloud CLI](https://cloud.google.com/sdk/docs/install)
 - [Helm](https://helm.sh/docs/intro/install/)
 - [jq](https://jqlang.github.io/jq/download/)
 
@@ -63,12 +65,11 @@ To learn the logic behind the implementation, read [this](https://cloud.redhat.c
 Listed in their order of precedence, they work together to provision an ARO cluster, make necessary configurations and then register the cluster to ACM for day-2 configurations and management. However, by default the CI pipeline script does not do ACM-HUB registration, instead it deploys the OpenShift GitOps operator (ArgoCD), apply the necessary configurations such as adding a repository, RBAC configuration. The day-2 GitOps configuration code is located inside the [gitops](./gitops/) directory.
 
 - [tfstate-config](./tfstate-config/): Create a storage account and storage container for remote state storage.
-- [key-vault](./key-vault/): Create an Azure KeyVault instance dedicated to this cluster; cluster details (admin_username, admin_password, console_url, api_server_url, ingress_lb_ip, api_server_lb_ip) will be stored there as KeyVault secrets.
   - This module needs to run only if the Vault instance does not exists. We only need one instance per Business Unit & Environment; however, the setup can be modified to one per BU/Env/Cluster; or per the customer requirements.
-- [aro-infra](./aro-infra/): This module deploys the infrastructure resources that must exist before a cluster can be deployed. The following resources will be created: ResourceGroup, VirtualNetworks, Control & Worker Subnets, NetworkSecurityGroup to allow traffic from the CICD/Bastion hosts, and a ServicePrincipal with required roles for the cluster.
+- [gcp-infra](./gcp-infra/): This module deploys the infrastructure resources that must exist before a cluster can be deployed. The following resources will be created: ResourceGroup, VirtualNetworks, Control & Worker Subnets, NetworkSecurityGroup to allow traffic from the CICD/Bastion hosts, and a ServicePrincipal with required roles for the cluster.
 - [tfvars-prep](./tfvars-prep/): Combine admin, user inputs, and derived variables into a master tfvars file. All subsequent modules will use that file.
 - [git-tfvars-file](./git-tfvars-file/): Commit the master tfvars file to GitHub. Feel free to change the repo location to GitLab, BitBucket...etc.
-- [aro-classic](./rosa-classic/): Creates the ARO cluster, save the cluster details to Azure KeyVault Secrets, and then add two "A" records the child DNS zone for Ingress and API.
+- [osd-gcp-classic](./osd-gcp-classic/): Creates the ARO cluster, save the cluster details to Azure KeyVault Secrets, and then add two "A" records the child DNS zone for Ingress and API.
 - [dns-tls-certs](./dns-tls-certs/): For the purpose of simplicity, I am assuming the TLS/SSL certificates are uploaded to an Azure KeyVault Certificates instance; I have seen this setup often with customers, hence why I am doing it this way. The module will download these certificates and then deploy them onto the ARO cluster.
   - Note, deploying the TLS certificates for the custom domain should be part of day-2 configurations using GitOps practices. Read [here](https://cloud.redhat.com/experts/aro/cert-manager/) to learn more.
 - [acmhub-registration](./acmhub-registration/): Registers the ARO cluster to  ACM-HUB.
@@ -153,15 +154,15 @@ Domain patterns:
 3. Verify Cluster (child) DNS Zone domain is resolvable
    
     ```sh
-    nslookup -type=NS aro-classic-101.dev.eastus.poc2357.openshift.sama-wat.com
+    nslookup -type=NS osd-classic-101.dev.eastus.poc2357.openshift.sama-wat.com
     Server:         100.64.100.1
     Address:        100.64.100.1#53
 
     Non-authoritative answer:
-    aro-classic-101.dev.eastus.poc2357.openshift.sama-wat.com       nameserver = ns1-06.azure-dns.com.
-    aro-classic-101.dev.eastus.poc2357.openshift.sama-wat.com       nameserver = ns2-06.azure-dns.net.
-    aro-classic-101.dev.eastus.poc2357.openshift.sama-wat.com       nameserver = ns3-06.azure-dns.org.
-    aro-classic-101.dev.eastus.poc2357.openshift.sama-wat.com       nameserver = ns4-06.azure-dns.info.
+    osd-classic-101.dev.eastus.poc2357.openshift.sama-wat.com       nameserver = ns1-06.azure-dns.com.
+    osd-classic-101.dev.eastus.poc2357.openshift.sama-wat.com       nameserver = ns2-06.azure-dns.net.
+    osd-classic-101.dev.eastus.poc2357.openshift.sama-wat.com       nameserver = ns3-06.azure-dns.org.
+    osd-classic-101.dev.eastus.poc2357.openshift.sama-wat.com       nameserver = ns4-06.azure-dns.info.
 
     Authoritative answers can be found from:
     ```
@@ -205,16 +206,16 @@ For the cluster to be accessible at the console, api urls, the name servers of t
 
 > [!IMPORTANT]
 > 
-> After the `aro-infra` module, if you've enabled custom domain, the [pipeline-create](.ci/pipeline-create.sh) script will wait for the user to confirm whether they have added NS records for the cluster dedicated DNS Zone to the registrar (ARO public) or to the self-managed DNS instance.
+> After the `gcp-infra` module, if you've enabled custom domain, the [pipeline-create](.ci/pipeline-create.sh) script will wait for the user to confirm whether they have added NS records for the cluster dedicated DNS Zone to the registrar (ARO public) or to the self-managed DNS instance.
 
 
 
 ```sh
-.ci/pipeline-create.sh .ci/user-inputs.sh | tee aro-classic-create.log
+.ci/pipeline-create.sh .ci/user-inputs.sh | tee osd-classic-create.log
 ```
 
 ## Cluster Teardown
 
 ```sh
-.ci/pipeline-destroy.sh .ci/user-inputs.sh | tee aro-classic-destroy.log
+.ci/pipeline-destroy.sh .ci/user-inputs.sh | tee osd-classic-destroy.log
 ```

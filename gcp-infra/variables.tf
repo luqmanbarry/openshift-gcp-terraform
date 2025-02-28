@@ -151,3 +151,9 @@ variable "use_auto_generated_domain" {
   default = true
   description = "Do you want to provide your own domain? true or false"
 }
+
+variable "gcp_wif_config_name" {
+  type = string
+  description = "Specifies the GCP Workload Identity Federation config used for cloud authentication."
+  default = ""
+}

@@ -8,7 +8,7 @@ locals {
   current_user               = trimspace(data.local_file.current_user.content)
 
   cluster_sa_keyfile_secret  = format("%s-%s-%s-keyfile", var.department, var.platform_environment,var.cluster_name)
-  cluster_firewall_name      = format("%s-%s-%s-keyfile", var.department, var.platform_environment,var.cluster_name)
+  cluster_project            = length(var.cluster_project) > 0 ? var.cluster_project : var.cluster_name
 
   derived_tags = {
     "cluster_name"    = var.cluster_name

@@ -1,24 +1,48 @@
 variable "cluster_name" {
-  default     = "rosa-sts-001"
   type        = string
-  description = "The name of the ROSA cluster to create"
+  description = "The name of the ARO cluster to create"
+  default = "osd-classic-001"
 }
 
-variable "organization" {
+variable "cluster_project" {
   type        = string
-  description = "The  business unit that owns the cluster."
-  default = "sales"
+  description = "The Cluster GCP project in which to create the cluster"
+  default = "gcp-classic-001"
 }
 
-variable "subscription_id" {
-  type = string
-  description = "The subscription ID of the business unit org"
+variable "region" {
+  type    = string
+  default = "eastus"
+  description = "The region where the OSD cluster is created"
+}
+
+variable "default_zone" {
+  type        = string
+  default = "us-south1-a"
+  description = "The GCP zone"
+}
+
+variable "department" {
+  type        = string
+  description = "The Organization folder. This could be seen as a department/business_unit"
+  default = "changeme"
 }
 
 variable "git_username" {
   type          = string
-  description   = "The GitHub username"
+  description   = "The Git username"
   default = "luqmanbarry"
+}
+
+variable "git_token_secret_name" {
+  type = string
+  default = "git-github-pat"
+}
+
+variable "git_token_secret_project" {
+  type = string
+  description = "The project where the Git PAT secret is located."
+  default = "changeme"
 }
 
 variable "git_token" {

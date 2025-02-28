@@ -7,7 +7,7 @@ variable "platform_environment" {
 
 variable "region" {
   type    = string
-  default = "eastus"
+  default = "us-south1"
   description = "The region where the OSD cluster is created"
 }
 
@@ -25,7 +25,7 @@ variable "cost_center" {
 
 variable "ocp_version" {
   type        = string
-  default     = "4.14.12"
+  default     = "4.17.0"
   description = "Desired version of OpenShift for the cluster, for example '4.1.0'. If version is greater than the currently running version, an upgrade will be scheduled."
 }
 
@@ -82,7 +82,6 @@ variable "default_tags" {
   type        = map(string)
   default = {
     "AutomationTool" = "Terraform"
-    "Contact"        = "opensource@example.com"
   }
   description = "Default Azure resource tags. Should be set at the admin level."
 }
@@ -143,7 +142,6 @@ variable "cluster_project" {
   default = "gcp-classic-001"
 }
 
-
 variable "cluster_details_secret_name" {
   type = string
   default = "openshift-OCP_ENV-CLUSTER_NAME-cluster-details"
@@ -172,15 +170,32 @@ variable "ocp_pull_secret_secret_name" {
   default = "osd-gcp-pull-secret"
 }
 
+variable "ocm_token_secret_name" {
+  type = string
+  description = "OCM Token. Store it in the same project as the pull-secret"
+  default = "osd-gcp-ocm-token"
+}
+
+variable "ocp_pull_secret_secret_project" {
+  type = string
+  default = "changeme"
+}
+
 variable "git_token_secret_name" {
   type = string
   default = "git-github-pat"
 }
 
+variable "git_token_secret_project" {
+  type = string
+  description = "The project where the Git PAT secret is located."
+  default = "changeme"
+}
+
 variable "cluster_name" {
   type        = string
   description = "The name of the ARO cluster to create"
-  default = "gcp-classic-001"
+  default = "osd-classic-001"
 }
 
 variable "cluster_service_account_name" {

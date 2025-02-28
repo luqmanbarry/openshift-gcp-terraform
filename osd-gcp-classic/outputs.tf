@@ -32,11 +32,11 @@ output "admin_password" {
   # sensitive  = true
 }
 
-output "cluster_resource_group" {
-  value = var.cluster_resource_group
+output "cluster_project" {
+  value = var.cluster_project
 }
 
-output "cluster_service_principal_name" {
+output "cluster_service_account_name" {
   value = var.cluster_name
 }
 

@@ -12,5 +12,3 @@ provider "google" {
   region      = var.region
   zone        = var.default_zone
 }
-
-provider "random" {}

@@ -34,6 +34,12 @@ data "local_file" "tfvars_file_content" {
 #   }
 # }
 
+## Get the git PAT secret
+data "google_secret_manager_secret_version" "git_pat_secret" {
+  secret  = var.git_token_secret_name
+  project = var.git_token_secret_project
+}
+
 
 resource "git_add" "tfvars_file" {
   directory = local.local_repository_dir
@@ -67,7 +73,7 @@ resource "git_push" "push_tfvars_file" {
   auth = {
     basic = {
       username = var.git_username
-      password = var.git_token
+      password = data.google_secret_manager_secret_version.git_pat_secret.secret_data
     }
   }
 

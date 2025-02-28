@@ -1,4 +1,5 @@
-export TF_VAR_git_token_secret_name="osd-gcp-github-pat"
+export TF_VAR_git_token_secret_name="git-github-pat"
+export TF_VAR_git_token_secret_project="example-gcp-project"
 export TF_VAR_department="sales" # This could be seen as a department/business_unit
 export TF_VAR_cost_center="570633"
 
@@ -6,8 +7,10 @@ export TF_VAR_root_dns_domain="sama-wat.com" # FOR NOW USE DEFAULT AZURE PROVIDE
 
 # OSD on GCP CLUSTER INFO
 export TF_VAR_cluster_name="osd-classic-101" # Max str length 15 characters
+export TF_VAR_gcp_wif_config_name="${TF_VAR_cluster_name}"
 export TF_VAR_cluster_project="example-gcp-project" # Can be different from cluster_name
 export TF_VAR_ocp_pull_secret_secret_name="osd-gcp-pull-secret"
+export TF_VAR_ocp_pull_secret_secret_project="example-gcp-project"  # Project where the pull secret is located
 export TF_VAR_private_cluster=false
 export TF_VAR_ocp_version="4.17.0" enable_autoscaling
 export TF_VAR_enable_autoscaling=true

@@ -21,7 +21,7 @@ resource "null_resource" "set_acmhub_cluster_kubeconfig" {
   ## Ensure kube files exists and are empty
   provisioner "local-exec" {
     interpreter = [ "/bin/bash", "-c" ]
-    command = "mkdir -p \"$KUBECONFIG_DIR\" && > $KUBECONFIG || true"
+    command = "mkdir -p \"$KUBECONFIG_DIR\" && chmod -R 644 \"$KUBECONFIG_DIR\" && > $KUBECONFIG || true"
     environment = {
       KUBECONFIG_DIR  = dirname(var.default_kubeconfig_filename)
     }

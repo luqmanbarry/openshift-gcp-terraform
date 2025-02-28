@@ -20,7 +20,6 @@ locals {
   acmhub_cluster_env                               = var.platform_environment
   cluster_details_secret_name                      = replace(replace(var.cluster_details_secret_name, "OCP_ENV", var.platform_environment), "CLUSTER_NAME", var.cluster_name)
   acmhub_details_secret_name                       = replace(replace(var.acmhub_details_secret_name, "OCP_ENV", var.platform_environment), "ACMHUB_NAME", var.acmhub_cluster_name)
-  ocp_pull_secret_name                             = replace(var.ocp_pull_secret_secret_name, "OCP_ENV", var.platform_environment)
 
   derived_tags = {
       "cluster_name"   = var.cluster_name
@@ -49,7 +48,9 @@ locals {
 
   dynamic_tfvars_content                           = [
       "#%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN: DERIVED VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
-      format("organization=%q", var.department),
+      format("department=%q", var.department),
+      format("git_token_secret_project=%q", var.git_token_secret_project),
+      format("git_token_secret_name=%q", var.git_token_secret_name),
       format("private_cluster=%s", var.private_cluster),
       format("vpc=%q", data.google_compute_network.current_vpc.name),
       format("master_subnet_name=%q", data.google_compute_subnetwork.vpc_master_subnet.name),
@@ -62,7 +63,10 @@ locals {
       format("region=%q", var.region),
       format("platform_environment=%q", var.platform_environment),
       format("cluster_name=%q", var.cluster_name),
+      format("gcp_wif_config_name=%q", length(var.gcp_wif_config_name) > 0 ? var.gcp_wif_config_name : var.cluster_name),
       format("ocp_pull_secret_secret_name=%q", var.ocp_pull_secret_secret_name),
+      format("ocp_pull_secret_secret_project=%q", var.ocp_pull_secret_secret_project),
+      format("ocm_token_secret_name=%q", var.ocm_token_secret_name),
       format("cluster_details_secret_name=%q", local.cluster_details_secret_name),
       format("acmhub_details_secret_name=%q", local.acmhub_details_secret_name),
       format("cluster_service_account_name=%q", data.google_service_account.cluster_service_account.name),
