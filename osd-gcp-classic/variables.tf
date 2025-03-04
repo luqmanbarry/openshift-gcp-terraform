@@ -133,8 +133,14 @@ variable "custom_dns_domain_name" {
 
 variable "custom_dns_domain_prefix" {
   type = string
-  description = "The custoom DNS domain prefix specific to the cluster"
+  description = "The custom DNS domain prefix specific to the cluster"
   default = "luqman"
+}
+
+variable "default_domain_prefix" {
+  type = string
+  description = "The default DNS domain prefix specific to the cluster"
+  default = "lbarry"
 }
 
 variable "cost_center" {
@@ -169,4 +175,28 @@ variable "ocm_token_secret_name" {
   type = string
   description = "OCM Token. Store it in the same project as the pull-secret"
   default = "osd-gcp-ocm-token"
+}
+
+variable "enable_autoscaling" {
+  type = bool
+  default = true
+  description = "Do you want to enable cluster autoscaling? true or false"
+}
+
+variable "autoscaling_max_replicas" {
+  type = number
+  description = "The maximum replicas count is autoscaling is enabled."
+  default = 12
+}
+
+variable "gcp_wif_config_name" {
+  type = string
+  description = "Specifies the GCP Workload Identity Federation config used for cloud authentication."
+  default = ""
+}
+
+variable "rh_cluster_sa_name" {
+  type = string
+  description = "Service account name RedHat is expecting."
+  default = "osd-ccs-admin"
 }

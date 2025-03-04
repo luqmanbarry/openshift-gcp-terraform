@@ -327,3 +327,15 @@ variable "gcp_wif_config_name" {
   default = ""
 }
 
+variable "default_domain_prefix" {
+  type = string
+  description = "The default DNS domain prefix specific to the cluster"
+  default = "lbarry"
+}
+
+variable "rh_cluster_sa_name" {
+  type = string
+  description = "Service account name RedHat is expecting."
+  default = "osd-ccs-admin"
+}
+

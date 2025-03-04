@@ -157,3 +157,49 @@ variable "gcp_wif_config_name" {
   description = "Specifies the GCP Workload Identity Federation config used for cloud authentication."
   default = ""
 }
+
+variable "rh_cluster_sa_name" {
+  type = string
+  description = "Service account name RedHat is expecting."
+  default = "osd-ccs-admin"
+}
+
+variable "rh_cluster_sa_roles" {
+  type = list(string)
+  description = "Service account roles as described in the docs."
+  default = [
+    "roles/compute.admin",
+    "roles/dns.admin",
+    "roles/orgpolicy.policyViewer",
+    "roles/servicemanagement.admin",
+    "roles/serviceusage.serviceUsageAdmin",
+    "roles/storage.admin",
+    "roles/compute.loadBalancerAdmin",
+    "roles/viewer",
+    "roles/iam.roleAdmin",
+    "roles/iam.securityAdmin",
+    "roles/iam.serviceAccountKeyAdmin",
+    "roles/iam.serviceAccountAdmin",
+    "roles/iam.serviceAccountUser"
+  ]
+}
+
+variable "enable_gcp_project_api_list" {
+  type = list(string)
+  description = "List of GCP APIs RedHat requires to be enabled at the project scope."
+  default = [
+    "deploymentmanager.googleapis.com",
+    "compute.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
+    "dns.googleapis.com",
+    "iamcredentials.googleapis.com",
+    "iam.googleapis.com",
+    "servicemanagement.googleapis.com",
+    "serviceusage.googleapis.com",
+    "storage-api.googleapis.com",
+    "storage-component.googleapis.com",
+    "orgpolicy.googleapis.com",
+    "iap.googleapis.com"
+  ]
+}
+

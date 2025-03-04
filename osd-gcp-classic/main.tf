@@ -27,13 +27,8 @@ resource "random_string" "random_lower_str" {
 }
 
 
-data "google_project" "cluster_resource_group" {
-  name = var.cluster_project
-}
-
-data "google_secret_manager_secret_version" "ocp_pull_secret" {
-  secret  = var.ocp_pull_secret_secret_name
-  project = var.ocp_pull_secret_secret_project
+data "google_project" "cluster_project" {
+  project_id = var.cluster_project
 }
 
 data "google_secret_manager_secret_version" "ocm_token" {
@@ -41,58 +36,56 @@ data "google_secret_manager_secret_version" "ocm_token" {
   project = var.ocp_pull_secret_secret_project
 }
 
-data "google_service_account" "cluster_service_account" {
-  account_id  = var.cluster_service_account_name
-  project     = var.cluster_project
+data "google_secret_manager_secret_version" "cluster_sa_keyfile" {
+  secret  = local.cluster_sa_keyfile_secret
+  project = var.cluster_project
 }
 
-data "google_service_account_key" "cluster_service_account_keyfile" {
-  name = google_service_account.cluster_service_account.name
+resource "local_file" "gcp_sa_keyfile" {
+  content  = base64decode(data.google_secret_manager_secret_version.cluster_sa_keyfile.secret_data)
+  filename = local.gcp_sa_keyfile
 }
 
 # OSD Cluster
 resource "shell_script" "cluster_install" {
 
-  lifecycle_commands {
-    create = templatefile(
-      "${path.module}/templates/cluster_install.tftpl",
-      {
-        ocm_token                 = data.google_secret_manager_secret_version.ocm_token.secret_data
-        cluster_name              = var.cluster_name
-        private_cluster           = var.private_cluster
-        vpc                       = var.vpc
-        cluster_project           = var.cluster_project
-        region                    = var.region
-        master_subnet_name        = var.master_subnet_name
-        worker_subnet_name        = var.worker_subnet_name
-        worker_machine_type       = var.worker_machine_type
-        worker_node_count         = var.worker_node_count
-        domain_prefix             = local.domain_prefix
-        enable_autoscaling        = var.enable_autoscaling
-        autoscaling_max_replicas  = var.autoscaling_max_replicas
-        pod_cidr                  = var.pod_cidr
-        service_cidr              = var.service_cidr
-        gcp_sa_keyfile            = data.google_service_account_key.cluster_service_account_keyfile.public_key
-        gcp_wif_config_name       = var.gcp_wif_config_name
+  interpreter = ["/bin/bash", "-c"]
 
-    })
-    delete = templatefile(
-      "${path.module}/templates/cluster_destroy.tftpl",
-      {
-        ocm_token                 = data.google_secret_manager_secret_version.ocm_token.secret_data
-        cluster_name              = var.cluster_name
-    })
+  lifecycle_commands {
+    create = file("${path.module}/templates/cluster_install.sh")
+    delete = file("${path.module}/templates/cluster_destroy.sh")
+  }
+
+  sensitive_environment = {
+    ocm_token                 = data.google_secret_manager_secret_version.ocm_token.secret_data
+    cluster_name              = var.cluster_name
+    private_cluster           = var.private_cluster
+    vpc                       = var.vpc
+    cluster_project           = var.cluster_project
+    version                   = var.ocp_version
+    region                    = var.region
+    master_subnet_name        = var.master_subnet_name
+    worker_subnet_name        = var.worker_subnet_name
+    worker_machine_type       = var.worker_machine_type
+    worker_node_count         = var.worker_node_count
+    domain_prefix             = var.use_auto_generated_domain ? var.default_domain_prefix : var.custom_dns_domain_prefix
+    enable_autoscaling        = var.enable_autoscaling
+    autoscaling_max_replicas  = var.autoscaling_max_replicas
+    pod_cidr                  = var.pod_cidr
+    service_cidr              = var.service_cidr
+    gcp_sa_keyfile            = local.gcp_sa_keyfile
+    gcp_wif_config_name       = var.gcp_wif_config_name
   }
 }
 
-resource "time_sleep" "wait_5min" {
+resource "time_sleep" "wait_for_cluster" {
   depends_on      = [ shell_script.cluster_install ]
-  create_duration = "300s"
+  create_duration = "3000s"
 }
 
 # Get Cluster API Server
 resource "null_resource" "get_cluster_details" {
-  depends_on = [ time_sleep.wait_5min ]
+  depends_on = [ time_sleep.wait_for_cluster ]
 
   # Get Cluster Console URL
   provisioner "local-exec" {
@@ -202,13 +195,18 @@ resource "google_secret_manager_secret" "cluster_details_secret" {
   }
 }
 
+data "google_service_account" "cluster_service_account" {
+  account_id = var.rh_cluster_sa_name
+  project    = var.cluster_project
+}
+
 ## Grant Cluster Details Secret SecretAccessor role
 resource "google_secret_manager_secret_iam_binding" "cluster_details_secret_bindings" {
   project = google_secret_manager_secret.cluster_details_secret.project
   secret_id = google_secret_manager_secret.cluster_details_secret.secret_id
   role = "roles/secretmanager.secretAccessor"
   members = [
-    "serviceAccount:${google_service_account.cluster_service_account.email}",
+    "serviceAccount:${data.google_service_account.cluster_service_account.email}",
     length(regexall(".iam.gserviceaccount.com$", local.current_user)) > 0 ? format("serviceAccount:%s", local.current_user) : format("user:%s", local.current_user)
   ]
   

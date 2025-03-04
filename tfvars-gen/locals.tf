@@ -37,7 +37,7 @@ locals {
 
   # TFVARs Paths
   admin_tfvars_path                                = format("${path.module}/../tfvars/admin/admin.tfvars")
-  final_tfvars_path                                = format("${path.module}/../tfvars/computed/%s/%s/%s.tfvars", var.department, local.cluster_project, var.cluster_name)
+  final_tfvars_path                                = format("${path.module}/../tfvars/computed/%s/%s.tfvars", var.department, var.cluster_name)
   
   # FINAL OUTPUT
   admin_tfvars_content                            = [
@@ -55,11 +55,10 @@ locals {
       format("vpc=%q", data.google_compute_network.current_vpc.name),
       format("master_subnet_name=%q", data.google_compute_subnetwork.vpc_master_subnet.name),
       format("master_subnet_cidr=%q", data.google_compute_subnetwork.vpc_master_subnet.ip_cidr_range),
-      format("master_subnet_id=%q", data.google_compute_subnetwork.vpc_master_subnet.network),
+      format("master_subnet_id=%q", data.google_compute_subnetwork.vpc_master_subnet.subnetwork_id ),
       format("worker_subnet_name=%q", data.google_compute_subnetwork.vpc_worker_subnet.name),
       format("worker_subnet_cidr=%q", data.google_compute_subnetwork.vpc_worker_subnet.ip_cidr_range),
-      format("worker_subnet_id=%q", data.google_compute_subnetwork.vpc_worker_subnet.network),
-      format("worker_subnet_id=%q", data.google_compute_subnetwork.vpc_worker_subnet.network),
+      format("worker_subnet_id=%q", data.google_compute_subnetwork.vpc_worker_subnet.subnetwork_id ),
       format("region=%q", var.region),
       format("platform_environment=%q", var.platform_environment),
       format("cluster_name=%q", var.cluster_name),
@@ -88,6 +87,7 @@ locals {
       format("base_dns_zone_project=%q", var.base_dns_zone_project),
       format("root_dns_domain=%q", var.root_dns_domain),
       format("use_auto_generated_domain=%s", var.use_auto_generated_domain),
+      format("default_domain_prefix=%q", var.default_domain_prefix),
       format("custom_dns_domain_prefix=%q", local.custom_dns_domain_prefix),
       format("custom_dns_domain_name=%q", local.custom_dns_domain_name),
       format("acmhub_cluster_env=%q", local.acmhub_cluster_env),

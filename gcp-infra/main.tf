@@ -88,7 +88,7 @@ resource "google_compute_router_nat" "worker_router_nat" {
 }
 
 resource "google_compute_firewall" "inbound_traffic_security" {
-  name        = var.cluster_inbound_firewall_rules[count.index].name
+  name        = format("%s-%s", var.cluster_name, var.cluster_inbound_firewall_rules[count.index].name)
   project     = local.cluster_project
   network     = google_compute_network.vpc_network.name
 
@@ -109,19 +109,34 @@ resource "google_compute_firewall" "inbound_traffic_security" {
 
 }
 
+# Enable OSD required APIs at project scope
+resource "google_project_service" "project" {
+  count   = length(var.enable_gcp_project_api_list)
+  project = var.cluster_project
+  service = var.enable_gcp_project_api_list[count.index]
+
+  timeouts {
+    create = "30m"
+    update = "40m"
+  }
+
+  disable_on_destroy = false
+}
+
 # Workload Identity Federation Configs
 
 ## Create the cluster Service Account
 resource "google_service_account" "cluster_service_account" {
-  account_id   = var.cluster_name # Unique ID for the service account
+  account_id   = var.rh_cluster_sa_name
   display_name = format("%s OCP Service Account", var.cluster_name)
   description  = format("Service account for the %s OpenShift cluster", var.cluster_name)
 }
 
-## Assign roles to the service account
-resource "google_project_iam_binding" "cluster_sa_iam_binding" {
+## Assign roles to the service account - roles/compute.admin
+resource "google_project_iam_binding" "cluster_sa_iam_bindings" {
+  count   = length(var.rh_cluster_sa_roles)
   project = local.cluster_project
-  role    = "roles/editor"
+  role    = var.rh_cluster_sa_roles[count.index]
 
   members = [
     "serviceAccount:${google_service_account.cluster_service_account.email}",
@@ -132,6 +147,41 @@ resource "google_project_iam_binding" "cluster_sa_iam_binding" {
 ## Generate a key file for the service account
 resource "google_service_account_key" "cluster_sa_keyfile" {
   service_account_id = google_service_account.cluster_service_account.name
+}
+
+## Create Cluster SA Secret SecretManager
+resource "google_secret_manager_secret" "cluster_sa_keyfile" {
+  secret_id = local.cluster_sa_keyfile_secret
+  project   = var.cluster_project
+
+  labels    = local.derived_tags
+
+  replication {
+    auto {}
+  }
+
+  lifecycle {
+    ignore_changes = [ labels ]
+  }
+}
+
+## Grant Cluster SA Secret SecretAccessor role
+resource "google_secret_manager_secret_iam_binding" "cluster_details_secret_bindings" {
+  project = google_secret_manager_secret.cluster_sa_keyfile.project
+  secret_id = google_secret_manager_secret.cluster_sa_keyfile.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  members = [
+    "serviceAccount:${google_service_account.cluster_service_account.email}",
+    length(regexall(".iam.gserviceaccount.com$", local.current_user)) > 0 ? format("serviceAccount:%s", local.current_user) : format("user:%s", local.current_user)
+  ]
+  
+}
+
+## Store the Cluster SA Keyfile
+resource "google_secret_manager_secret_version" "store_cluster_keyfile" {
+  secret = google_secret_manager_secret.cluster_sa_keyfile.id
+
+  secret_data = google_service_account_key.cluster_sa_keyfile.private_key
 }
 
 ## Create WIF Pool
@@ -158,7 +208,7 @@ resource "google_iam_workload_identity_pool_provider" "osd_provider" {
 }
 
 resource "google_service_account_iam_member" "osd_service_account_workload_identity_user" {
-  service_account_id = google_service_account.osd_service_account.name
+  service_account_id = google_service_account.cluster_service_account.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.osd_pool.name}/*"
 }

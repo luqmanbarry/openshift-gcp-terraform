@@ -1,5 +1,4 @@
 locals {
-  domain_prefix   = format("%s-%s_5s", var.platform_environment, var.region, var.department)
   default_domain  = format("%s-%s-%s", var.cluster_name, var.platform_environment, var.department)
   # default_domain  = "poc-101"
   # ocp_pull_secret = "${path.module}/.pull-secret/pull-secret.json" # Read from local file
@@ -7,6 +6,8 @@ locals {
   scratch_dir                = "${path.module}/../.tmp"
   current_user_file          = format("%s/current_user.txt", local.scratch_dir)
   current_user               = trimspace(data.local_file.current_user.content)
+  ocp_pull_secret_file       = format("%s/ocp_pull_secret.txt", local.scratch_dir)
+  gcp_sa_keyfile             = format("%s/gcp_sa_keyfile.txt", local.scratch_dir)
 
   console_url_content_path       = "${local.scratch_dir}/console_url"
   api_server_url_content_path    = "${local.scratch_dir}/api_server_url"
@@ -14,6 +15,8 @@ locals {
   admin_password_content_path    = "${local.scratch_dir}/admin_password"
   ingress_lb_ip_content_path     = "${local.scratch_dir}/ingress_lb_ip"
   api_server_lb_ip_content_path  = "${local.scratch_dir}/api_server_lb_ip"
+
+  cluster_sa_keyfile_secret  = format("%s-%s-%s-keyfile", var.department, var.platform_environment, var.cluster_name)
 
   derived_tags = {
     "cluster_name"    = var.cluster_name
@@ -39,6 +42,6 @@ locals {
     api_server_lb_ip  = trimspace(data.local_file.api_server_lb_ip.content)
     openshift_version = var.ocp_version
     service_account_name    = var.cluster_service_account_name
-    service_account_keyfile = azuread_service_principal_password.current_cluster.value
+    service_account_keyfile = data.google_secret_manager_secret_version.cluster_sa_keyfile.secret_data
   }
 }

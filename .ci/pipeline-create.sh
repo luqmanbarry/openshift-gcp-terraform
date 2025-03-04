@@ -158,7 +158,7 @@ echo "##########################################################################
 TF_MODULE="osd-gcp-classic"
 BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
 BACKEND_PATH="${TF_MODULE}"
-TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/admin/admin.tfvars"
+TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_department}/${TF_VAR_cluster_name}.tfvars"
 echo "=================================================="
 echo "==> Module - $TF_MODULE"
 echo "=================================================="
