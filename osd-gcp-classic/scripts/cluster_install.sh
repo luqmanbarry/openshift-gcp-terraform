@@ -57,8 +57,13 @@ then
     --private=${private_cluster} \
     --http-proxy="${htt_proxy}" \
     --https-proxy="${htts_proxy}" \
-    --no-proxy="${no_proxy}" \
-    --additional-trust-bundle-file="${additional_trust_bundle}"
+    --no-proxy="${no_proxy}"
+
+  if [ "$?" != "0" ];
+  then
+    echo "Cluster installation failed."
+    exit 1
+  fi
 
   echo "Waiting for cluster creation to complete..."
   sleep 3000
@@ -96,8 +101,13 @@ else
     --private=${private_cluster} \
     --http-proxy="${htt_proxy}" \
     --https-proxy="${htts_proxy}" \
-    --no-proxy="${no_proxy}" \
-    --additional-trust-bundle-file="${additional_trust_bundle}"
+    --no-proxy="${no_proxy}"
+
+  if [ "$?" != "0" ];
+  then
+    echo "Cluster installation failed."
+    exit 1
+  fi
 
   echo "Waiting for cluster creation to complete..."
   sleep 3000

@@ -45,4 +45,4 @@ export TF_VAR_acmhub_registration_enabled=false
 export TF_VAR_acmhub_cluster_name="osd-acm-hub-102"
 export TF_VAR_acmhub_cluster_env="dev"
 
-export TF_LOG="info"
+export TF_LOG="debug"
