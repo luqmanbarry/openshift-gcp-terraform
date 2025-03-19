@@ -7,6 +7,8 @@ locals {
   default_kubeconfig_filename            = format("%s/.kube/config", local.kube_home_dir)
   managed_cluster_kubeconfig_filename    = format("%s/.kube/managed_cluster/config", local.kube_home_dir)
   acmhub_kubeconfig_filename             = format("%s/.kube/acm_hub/config", local.kube_home_dir)
+  wif_sa_name                            = format("%s-%s-%s", var.department, var.platform_environment, var.cluster_name)
+
   
   scratch_dir                            = "${path.module}/../.tmp"
   current_user_file                      = format("%s/current_user.txt", local.scratch_dir)
@@ -59,16 +61,17 @@ locals {
       format("worker_subnet_name=%q", data.google_compute_subnetwork.vpc_worker_subnet.name),
       format("worker_subnet_cidr=%q", data.google_compute_subnetwork.vpc_worker_subnet.ip_cidr_range),
       format("worker_subnet_id=%q", data.google_compute_subnetwork.vpc_worker_subnet.subnetwork_id ),
+      format("vpc_cidr=%q", var.vpc_cidr),
       format("region=%q", var.region),
       format("platform_environment=%q", var.platform_environment),
       format("cluster_name=%q", var.cluster_name),
-      format("gcp_wif_config_name=%q", length(var.gcp_wif_config_name) > 0 ? var.gcp_wif_config_name : var.cluster_name),
+      format("enable_gcp_wif_authentication=%s", var.enable_gcp_wif_authentication),
       format("ocp_pull_secret_secret_name=%q", var.ocp_pull_secret_secret_name),
       format("ocp_pull_secret_secret_project=%q", var.ocp_pull_secret_secret_project),
       format("ocm_token_secret_name=%q", var.ocm_token_secret_name),
       format("cluster_details_secret_name=%q", local.cluster_details_secret_name),
       format("acmhub_details_secret_name=%q", local.acmhub_details_secret_name),
-      format("cluster_service_account_name=%q", data.google_service_account.cluster_service_account.name),
+      format("cluster_service_account_name=%q", var.enable_gcp_wif_authentication ? "" : data.google_service_account.cluster_service_account[0].name),
       format("cluster_project=%q", local.cluster_project),
       format("cost_center=%q", var.cost_center),
       format("ocp_version=%q", var.ocp_version),

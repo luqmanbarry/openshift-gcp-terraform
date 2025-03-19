@@ -8,6 +8,11 @@ locals {
   current_user               = trimspace(data.local_file.current_user.content)
   ocp_pull_secret_file       = format("%s/ocp_pull_secret.txt", local.scratch_dir)
   gcp_sa_keyfile             = format("%s/gcp_sa_keyfile.txt", local.scratch_dir)
+  additional_trust_bundle    = format("%s/additional_trust_bundle.pem", local.scratch_dir)
+
+  cluster_sa_keyfile_secret  = format("%s-%s-%s-keyfile", var.department, var.platform_environment, var.cluster_name)
+
+  wif_sa_name                = format("%s-%s-%s", var.department, var.platform_environment, var.cluster_name)
 
   console_url_content_path       = "${local.scratch_dir}/console_url"
   api_server_url_content_path    = "${local.scratch_dir}/api_server_url"
@@ -15,8 +20,6 @@ locals {
   admin_password_content_path    = "${local.scratch_dir}/admin_password"
   ingress_lb_ip_content_path     = "${local.scratch_dir}/ingress_lb_ip"
   api_server_lb_ip_content_path  = "${local.scratch_dir}/api_server_lb_ip"
-
-  cluster_sa_keyfile_secret  = format("%s-%s-%s-keyfile", var.department, var.platform_environment, var.cluster_name)
 
   derived_tags = {
     "cluster_name"    = var.cluster_name
@@ -42,6 +45,6 @@ locals {
     api_server_lb_ip  = trimspace(data.local_file.api_server_lb_ip.content)
     openshift_version = var.ocp_version
     service_account_name    = var.cluster_service_account_name
-    service_account_keyfile = data.google_secret_manager_secret_version.cluster_sa_keyfile.secret_data
+    service_account_keyfile = var.enable_gcp_wif_authentication ? "" : data.google_secret_manager_secret_version.cluster_sa_keyfile[0].secret_data
   }
 }

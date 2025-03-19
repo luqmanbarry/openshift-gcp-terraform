@@ -152,10 +152,10 @@ variable "use_auto_generated_domain" {
   description = "Do you want to provide your own domain? true or false"
 }
 
-variable "gcp_wif_config_name" {
-  type = string
-  description = "Specifies the GCP Workload Identity Federation config used for cloud authentication."
-  default = ""
+variable "enable_gcp_wif_authentication" {
+  type = bool
+  description = "Specifies whether to enable GCP Workload Identity Federation based authentication."
+  default = true
 }
 
 variable "rh_cluster_sa_name" {
@@ -166,7 +166,7 @@ variable "rh_cluster_sa_name" {
 
 variable "rh_cluster_sa_roles" {
   type = list(string)
-  description = "Service account roles as described in the docs."
+  description = "Roles for Service Account based authentication"
   default = [
     "roles/compute.admin",
     "roles/dns.admin",
@@ -181,6 +181,17 @@ variable "rh_cluster_sa_roles" {
     "roles/iam.serviceAccountKeyAdmin",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser"
+  ]
+}
+
+variable "wif_sa_roles" {
+  type = list(string)
+  description = "Roles for Workload Identity Federation based authentication"
+  default = [
+    "roles/iam.roleAdmin",
+    "roles/iam.serviceAccountAdmin",
+    "roles/iam.workloadIdentityPoolAdmin",
+    "roles/resourcemanager.projectIamAdmin"
   ]
 }
 

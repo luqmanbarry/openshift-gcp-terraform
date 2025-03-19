@@ -41,6 +41,12 @@ variable "master_subnet_cidr" {
   default = "10.90.1.0/24"
 }
 
+variable "vpc_cidr" {
+  type        = string
+  description = "Block of IP addresses used by OpenShift while installing the cluster"
+  default = "10.0.0.0/8"
+}
+
 variable "master_subnet_router_nat" {
   type        = string
   description = "Name of the VPC master subnet router NAT"
@@ -337,5 +343,11 @@ variable "rh_cluster_sa_name" {
   type = string
   description = "Service account name RedHat is expecting."
   default = "osd-ccs-admin"
+}
+
+variable "enable_gcp_wif_authentication" {
+  type = bool
+  description = "Specifies whether to enable GCP Workload Identity Federation based authentication."
+  default = true
 }
 

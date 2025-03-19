@@ -8,6 +8,8 @@ tf_resources_namespace        = "ocp-tf-resources"
 rh_cluster_sa_name            = "osd-ccs-admin"
 rh_cluster_sa_roles           = [
   "roles/compute.admin",
+  "roles/compute.networkAdmin",
+  "roles/compute.securityAdmin",
   "roles/dns.admin",
   "roles/orgpolicy.policyViewer",
   "roles/servicemanagement.admin",
@@ -21,6 +23,14 @@ rh_cluster_sa_roles           = [
   "roles/iam.serviceAccountAdmin",
   "roles/iam.serviceAccountUser"
 ]
+
+wif_sa_roles                  = [
+  "roles/iam.roleAdmin",
+  "roles/iam.serviceAccountAdmin",
+  "roles/iam.workloadIdentityPoolAdmin",
+  "roles/resourcemanager.projectIamAdmin"
+]
+
 enable_gcp_project_api_list   = [
   "deploymentmanager.googleapis.com",
   "compute.googleapis.com",
@@ -77,6 +87,15 @@ default_tags = {
   # More default tags here
 }
 
+proxy           = {
+  enable        = false
+  http_proxy    = "http://proxy.corporate.com"
+  https_proxy   = "http://proxy.corporate.com"
+  no_proxy      = "kubernetes.default.svc,*.googleapis.com"
+  additional_trust_bundle = ""
+}
+
+
 #================= GIT MGMT OF TFVARS ================================================
 git_base_url            = "https://github.com/"
 git_repository_url      = "https://github.com/luqmanbarry/aro-classic-terraform.git"
@@ -99,27 +118,29 @@ git_token_secret_name="git-github-pat"
 
 private_cluster=false
 
-vpc="osd-lbarry-101-vpc"
+vpc="osd-classic-101-vpc"
 
-master_subnet_name="osd-lbarry-101-master-subnet"
+master_subnet_name="osd-classic-101-master-subnet"
 
-master_subnet_cidr="10.91.1.0/24"
+master_subnet_cidr="10.1.90.0/23"
 
-master_subnet_id="1519174242588663824"
+master_subnet_id="238529704908563831"
 
-worker_subnet_name="osd-lbarry-101-worker-subnet"
+worker_subnet_name="osd-classic-101-worker-subnet"
 
-worker_subnet_cidr="10.91.2.0/24"
+worker_subnet_cidr="10.2.90.0/23"
 
-worker_subnet_id="8784212896669999589"
+worker_subnet_id="8561459086492968311"
+
+vpc_cidr="10.0.0.0/8"
 
 region="us-central1"
 
 platform_environment="dev"
 
-cluster_name="osd-lbarry-101"
+cluster_name="osd-classic-101"
 
-gcp_wif_config_name="osd-lbarry-101"
+enable_gcp_wif_authentication=true
 
 ocp_pull_secret_secret_name="osd-gcp-pull-secret"
 
@@ -127,17 +148,17 @@ ocp_pull_secret_secret_project="example-gcp-project"
 
 ocm_token_secret_name="osd-gcp-ocm-token"
 
-cluster_details_secret_name="openshift-dev-osd-lbarry-101-cluster-details"
+cluster_details_secret_name="openshift-dev-osd-classic-101-cluster-details"
 
 acmhub_details_secret_name="openshift-dev-osd-acm-hub-102-cluster-details"
 
-cluster_service_account_name="projects/example-gcp-project/serviceAccounts/osd-ccs-admin@example-gcp-project.iam.gserviceaccount.com"
+cluster_service_account_name=""
 
 cluster_project="example-gcp-project"
 
 cost_center="570633"
 
-ocp_version="4.17.0"
+ocp_version="4.18.3"
 
 acmhub_registration_enabled=false
 
@@ -151,7 +172,7 @@ acmhub_kubeconfig_filename="/Users/luqman/workspace/guides/osd-classic-gcp-terra
 
 acmhub_cluster_name="osd-acm-hub-102"
 
-worker_machine_type="n2-standard-32"
+worker_machine_type="n2-standard-8"
 
 worker_node_count=3
 
@@ -169,14 +190,14 @@ root_dns_domain="sama-wat.com"
 
 use_auto_generated_domain=true
 
-default_domain_prefix="dev-sales"
+default_domain_prefix=""
 
-custom_dns_domain_prefix="osd-lbarry-101.dev.us-central1.sales"
+custom_dns_domain_prefix="osd-classic-101.dev.us-central1.sales"
 
-custom_dns_domain_name="osd-lbarry-101.dev.us-central1.sales.openshift.sama-wat.com"
+custom_dns_domain_name="osd-classic-101.dev.us-central1.sales.openshift.sama-wat.com"
 
 acmhub_cluster_env="dev"
 
-cluster_infra_tags={"cluster_name"="osd-lbarry-101","cluster_type"="osd-gcp","cost_center"="570633","created_by"="lbarry_redhat-com","environment"="dev","organization"="sales","team_owner"="platform-ops"}
+cluster_infra_tags={"cluster_name"="osd-classic-101","cluster_type"="osd-gcp","cost_center"="570633","created_by"="lbarry_redhat-com","environment"="dev","organization"="sales","team_owner"="platform-ops"}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%% END: DERIVED VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

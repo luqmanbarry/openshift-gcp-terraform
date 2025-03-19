@@ -39,3 +39,6 @@ override.tf.json
 **/.kube
 
 **/.tmp
+
+**/cluster-build.log
+**/cluster-build.txt

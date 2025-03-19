@@ -85,6 +85,12 @@ variable "vpc" {
   default = ""
 }
 
+variable "vpc_cidr" {
+  type        = string
+  description = "Block of IP addresses used by OpenShift while installing the cluster"
+  default = "10.0.0.0/8"
+}
+
 variable "pod_cidr" {
   type        = string
   description = "value of the CIDR block to use for in-cluster Pods"
@@ -200,3 +206,22 @@ variable "rh_cluster_sa_name" {
   description = "Service account name RedHat is expecting."
   default = "osd-ccs-admin"
 }
+
+variable "enable_gcp_wif_authentication" {
+  type = bool
+  description = "Specifies whether to enable GCP Workload Identity Federation based authentication."
+  default = true
+}
+
+variable "proxy" {
+  default     = null
+  description = "cluster-wide HTTP or HTTPS proxy settings"
+  type = object({
+    enable                  = bool
+    http_proxy              = string           # required  http proxy
+    https_proxy             = string           # required  https proxy
+    additional_trust_bundle = optional(string) # a string contains contains a PEM-encoded X.509 certificate bundle that will be added to the nodes' trusted certificate store.
+    no_proxy                = optional(string) # no proxy
+  })
+}
+

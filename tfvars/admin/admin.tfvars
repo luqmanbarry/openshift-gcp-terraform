@@ -21,6 +21,14 @@ rh_cluster_sa_roles           = [
   "roles/iam.serviceAccountAdmin",
   "roles/iam.serviceAccountUser"
 ]
+
+wif_sa_roles                  = [
+  "roles/iam.roleAdmin",
+  "roles/iam.serviceAccountAdmin",
+  "roles/iam.workloadIdentityPoolAdmin",
+  "roles/resourcemanager.projectIamAdmin"
+]
+
 enable_gcp_project_api_list   = [
   "deploymentmanager.googleapis.com",
   "compute.googleapis.com",
@@ -76,6 +84,15 @@ default_tags = {
   "cluster_type" = "osd-gcp"
   # More default tags here
 }
+
+proxy           = {
+  enable        = false
+  http_proxy    = "http://proxy.corporate.com"
+  https_proxy   = "http://proxy.corporate.com"
+  no_proxy      = "kubernetes.default.svc,*.googleapis.com"
+  additional_trust_bundle = ""
+}
+
 
 #================= GIT MGMT OF TFVARS ================================================
 git_base_url            = "https://github.com/"

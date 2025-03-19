@@ -7,16 +7,16 @@ export TF_VAR_root_dns_domain="sama-wat.com" # FOR NOW USE DEFAULT AZURE PROVIDE
 
 # OSD on GCP CLUSTER INFO
 export TF_VAR_platform_environment="dev"
-export TF_VAR_cluster_name="osd-lbarry-101" # Max str length 15 characters
-export TF_VAR_gcp_wif_config_name="${TF_VAR_cluster_name}"
+export TF_VAR_cluster_name="osd-classic-101" # Max str length 15 characters
+export TF_VAR_enable_gcp_wif_authentication=true
 export TF_VAR_cluster_project="example-gcp-project" # Can be different from cluster_name
 export TF_VAR_ocm_token_secret_name="osd-gcp-ocm-token"
 export TF_VAR_ocp_pull_secret_secret_name="osd-gcp-pull-secret"
 export TF_VAR_ocp_pull_secret_secret_project="example-gcp-project"  # Project where the pull secret is located
 export TF_VAR_private_cluster=false
-export TF_VAR_ocp_version="4.17.0" enable_autoscaling
+export TF_VAR_ocp_version="4.18.3" enable_autoscaling
 export TF_VAR_enable_autoscaling=true
-export TF_VAR_default_domain_prefix="${TF_VAR_platform_environment}-${TF_VAR_department}"  # Max 15 chars
+export TF_VAR_default_domain_prefix=""  # Max 15 chars - Must be unique per domain
 export TF_VAR_autoscaling_max_replicas=12
 export TF_VAR_use_auto_generated_domain=true # if set to false, you will have to configure DNS Zones
 export TF_VAR_base_dns_name="openshift.sama-wat.com"
@@ -25,10 +25,12 @@ export TF_VAR_base_dns_zone_resource_group="osd-dns-zones"
 export TF_VAR_region="us-central1"
 export TF_VAR_default_zone="us-central1-a"
 export TF_VAR_availability_zones='["us-central1-a", "us-central1-b", "us-central1-c"]'
-export TF_VAR_master_subnet_cidr="10.91.1.0/24" # WILL BE PROVIDED
-export TF_VAR_worker_subnet_cidr="10.91.2.0/24" # WILL BE PROVIDED
+# Default VPC CIDR: 10.0.0.0/8
+export TF_VAR_vpc_cidr="10.0.0.0/8"  ## Default value for GCP VPC
+export TF_VAR_master_subnet_cidr="10.1.90.0/23"  # Use /23 or larger
+export TF_VAR_worker_subnet_cidr="10.2.90.0/23"  # Use /23 or larger
 export TF_VAR_worker_node_count=3
-export TF_VAR_worker_machine_type="n2-standard-32"
+export TF_VAR_worker_machine_type="n2-standard-8"
 
 
 # TF State Info

@@ -5,9 +5,13 @@ locals {
 
   scratch_dir                = "${path.module}/../.tmp"
   current_user_file          = format("%s/current_user.txt", local.scratch_dir)
+  cluster_sa_check_file      = format("%s/cluster_sa_check_file.txt", local.scratch_dir)
+  wif_pool_check_file        = format("%s/wif_pool_check_file.txt", local.scratch_dir)
+
   current_user               = trimspace(data.local_file.current_user.content)
 
   cluster_sa_keyfile_secret  = format("%s-%s-%s-keyfile", var.department, var.platform_environment, var.cluster_name)
+  wif_sa_name                = format("%s-%s-%s", var.department, var.platform_environment, var.cluster_name)
   cluster_project            = length(var.cluster_project) > 0 ? var.cluster_project : var.cluster_name
 
   derived_tags = {

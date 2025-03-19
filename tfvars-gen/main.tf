@@ -60,9 +60,12 @@ data "google_compute_router_nat" "worker_subnet_router_nat" {
 
 ## Service Account
 data "google_service_account" "cluster_service_account" {
+  # account_id   = var.enable_gcp_wif_authentication ? local.wif_sa_name : var.rh_cluster_sa_name
+  count        = var.enable_gcp_wif_authentication ? 0 : 1
   account_id   = var.rh_cluster_sa_name
   project      = local.cluster_project
 }
+
 
 ## Local Filesystem: Write combined tfvars to file
 resource "local_file" "write_output" {

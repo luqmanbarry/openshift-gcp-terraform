@@ -37,26 +37,33 @@ data "google_secret_manager_secret_version" "ocm_token" {
 }
 
 data "google_secret_manager_secret_version" "cluster_sa_keyfile" {
-  secret  = local.cluster_sa_keyfile_secret
-  project = var.cluster_project
+  count        = var.enable_gcp_wif_authentication ? 0 : 1
+  secret       = local.cluster_sa_keyfile_secret
+  project      = var.cluster_project
 }
 
 resource "local_file" "gcp_sa_keyfile" {
-  content  = base64decode(data.google_secret_manager_secret_version.cluster_sa_keyfile.secret_data)
+  count        = var.enable_gcp_wif_authentication ? 0 : 1
+  content  = base64decode(data.google_secret_manager_secret_version.cluster_sa_keyfile[0].secret_data)
   filename = local.gcp_sa_keyfile
+}
+
+resource "local_file" "additional_trust_bundle" {
+  content      = var.proxy.enable ? var.proxy.additional_trust_bundle : ""
+  filename     = local.additional_trust_bundle
 }
 
 # OSD Cluster
 resource "shell_script" "cluster_install" {
 
-  interpreter = ["/bin/bash", "-c"]
+  # interpreter = ["/bin/bash", "-c"]
 
   lifecycle_commands {
-    create = file("${path.module}/templates/cluster_install.sh")
-    delete = file("${path.module}/templates/cluster_destroy.sh")
+    create = file("${path.module}/scripts/cluster_install.sh")
+    delete = file("${path.module}/scripts/cluster_destroy.sh")
   }
 
-  sensitive_environment = {
+  environment = {
     ocm_token                 = data.google_secret_manager_secret_version.ocm_token.secret_data
     cluster_name              = var.cluster_name
     private_cluster           = var.private_cluster
@@ -71,16 +78,23 @@ resource "shell_script" "cluster_install" {
     domain_prefix             = var.use_auto_generated_domain ? var.default_domain_prefix : var.custom_dns_domain_prefix
     enable_autoscaling        = var.enable_autoscaling
     autoscaling_max_replicas  = var.autoscaling_max_replicas
+    vpc_cidr                  = var.vpc_cidr
     pod_cidr                  = var.pod_cidr
     service_cidr              = var.service_cidr
     gcp_sa_keyfile            = local.gcp_sa_keyfile
-    gcp_wif_config_name       = var.gcp_wif_config_name
+    enable_gcp_wif_authentication  = var.enable_gcp_wif_authentication
+    gcp_wif_config_name       = local.wif_sa_name
+    wif_role_prefix           = substr(replace(var.cluster_name, "-", ""), 0, 8)
+    http_proxy                = var.proxy.enable ? var.proxy.http_proxy : ""
+    https_proxy               = var.proxy.enable ? var.proxy.https_proxy : ""
+    no_proxy                  = var.proxy.enable ? var.proxy.no_proxy : ""
+    additional_trust_bundle   = local.additional_trust_bundle
   }
 }
 
 resource "time_sleep" "wait_for_cluster" {
   depends_on      = [ shell_script.cluster_install ]
-  create_duration = "3000s"
+  create_duration = "300s"
 }
 
 # Get Cluster API Server
@@ -90,7 +104,11 @@ resource "null_resource" "get_cluster_details" {
   # Get Cluster Console URL
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = "ocm describe cluster \"$CLUSTER\" --json | jq -r '.console.url' | xargs > $CONSOLE_URL_FILE"
+    command = <<EOT
+      CLUSTER_ID=$(ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER%'" | jq -r '.items[].id')
+      ocm describe cluster $CLUSTER_ID --json | jq -r '.console.url' | xargs > $CONSOLE_URL_FILE
+    EOT
+
     environment = {
       CLUSTER             = var.cluster_name
       CONSOLE_URL_FILE    = local.console_url_content_path
@@ -100,7 +118,11 @@ resource "null_resource" "get_cluster_details" {
   # Get Cluster Ingress LB IP
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = "ocm describe cluster \"$CLUSTER\" --json | jq -r '.ingress.load_balancer_ip' | xargs > $INGRESS_IP_FILE"
+    command = <<EOT
+      CLUSTER_ID=$(ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER%'" | jq -r '.items[].id')
+      ocm describe cluster $CLUSTER_ID --json | jq -r '.ingress.load_balancer_ip' | xargs > $INGRESS_IP_FILE
+    EOT
+
     environment = {
       CLUSTER             = var.cluster_name
       INGRESS_IP_FILE     = local.ingress_lb_ip_content_path
@@ -110,7 +132,11 @@ resource "null_resource" "get_cluster_details" {
   # Get Cluster API Server URL
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = "ocm describe cluster \"$CLUSTER\" --json | jq -r '.api.url' | xargs > $API_SERVER_URL_FILE"
+    command = <<EOT
+      CLUSTER_ID=$(ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER%'" | jq -r '.items[].id')
+      ocm describe cluster $CLUSTER_ID --json | jq -r '.api.url' | xargs > $API_SERVER_URL_FILE
+    EOT
+
     environment = {
       CLUSTER             = var.cluster_name
       API_SERVER_URL_FILE = local.api_server_url_content_path
@@ -120,7 +146,11 @@ resource "null_resource" "get_cluster_details" {
   # Get Cluster API Server LB IP
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = "ocm describe cluster \"$CLUSTER\" --json | '.api.load_balancer_ip' | xargs > $API_SERVER_IP_FILE"
+    command = <<EOT
+      CLUSTER_ID=$(ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER%'" | jq -r '.items[].id')
+      ocm describe cluster $CLUSTER_ID --json | '.api.load_balancer_ip' | xargs > $API_SERVER_IP_FILE
+    EOT
+
     environment = {
       CLUSTER             = var.cluster_name
       API_SERVER_IP_FILE  = local.api_server_lb_ip_content_path
@@ -196,17 +226,19 @@ resource "google_secret_manager_secret" "cluster_details_secret" {
 }
 
 data "google_service_account" "cluster_service_account" {
+  count      = var.enable_gcp_wif_authentication ? 0 : 1
   account_id = var.rh_cluster_sa_name
   project    = var.cluster_project
 }
 
 ## Grant Cluster Details Secret SecretAccessor role
 resource "google_secret_manager_secret_iam_binding" "cluster_details_secret_bindings" {
-  project = google_secret_manager_secret.cluster_details_secret.project
-  secret_id = google_secret_manager_secret.cluster_details_secret.secret_id
+  count      = var.enable_gcp_wif_authentication ? 0 : 1
+  project    = google_secret_manager_secret.cluster_details_secret.project
+  secret_id  = google_secret_manager_secret.cluster_details_secret.secret_id
   role = "roles/secretmanager.secretAccessor"
   members = [
-    "serviceAccount:${data.google_service_account.cluster_service_account.email}",
+    "serviceAccount:${data.google_service_account.cluster_service_account[0].email}",
     length(regexall(".iam.gserviceaccount.com$", local.current_user)) > 0 ? format("serviceAccount:%s", local.current_user) : format("user:%s", local.current_user)
   ]
   
