@@ -76,12 +76,15 @@ resource "null_resource" "get_default_admin_user_id" {
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
     command = <<EOT
-      ocm get /api/clusters_mgmt/v1/clusters/$CLUSTER_ID/groups/$DEFAULT_GROUP/users | jq -r '.items[].id' | xargs > $DEFAULT_ADMIN_USER_ID_FILE
+      #ocm get /api/clusters_mgmt/v1/clusters/$CLUSTER_ID/groups/$DEFAULT_GROUP/users | jq -r '.items[].id' | xargs > $DEFAULT_ADMIN_USER_ID_FILE
+      ocm get /api/clusters_mgmt/v1/clusters/$CLUSTER_ID/identity_providers/$IDP_ID/htpasswd_users | jq -r '.items[].username' | xargs > $DEFAULT_ADMIN_USER_ID_FILE
     EOT
     environment = {
       DEFAULT_GROUP               = local.default_user_group
       CLUSTER_ID                  = trimspace(file(local.cluster_id_file))
       DEFAULT_ADMIN_USER_ID_FILE  = local.default_admin_user_id_file
+      IDP_ID                      = trimspace(file(local.default_idp_id_file))
+
     }
   }
 
@@ -105,10 +108,10 @@ resource "null_resource" "cleanup_default_ipd" {
       for user_id in $DEFAULT_USER_ID; do ocm delete /api/clusters_mgmt/v1/clusters/$CLUSTER_ID/groups/$DEFAULT_GROUP/users/$user_id || true; sleep 5; done || true && \
       sleep 10
     EOT
-    
+
     environment = {
       DEFAULT_IDP_NAME          = local.default_idp_name
-      DEFAULT_USER_ID           = trimspace(file(local.default_admin_user_id_file))
+      DEFAULT_USER_ID           = file(local.default_admin_user_id_file)
       DEFAULT_GROUP             = local.default_user_group
       CLUSTER_ID                = trimspace(file(local.cluster_id_file))
       IDP_ID                    = trimspace(file(local.default_idp_id_file))

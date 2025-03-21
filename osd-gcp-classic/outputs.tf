@@ -2,6 +2,10 @@ output "cluster_name" {
   value = var.cluster_name
 }
 
+output "ocm_cluster_id" {
+  value = local.cluster_details.ocm_cluster_id
+}
+
 output "custom_domain" {
   value = var.custom_dns_domain_name
 }

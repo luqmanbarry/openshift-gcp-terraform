@@ -53,10 +53,6 @@ resource "local_file" "additional_trust_bundle" {
 # OSD Cluster
 resource "shell_script" "cluster_install" {
 
-  triggers = {
-    when_value_changed = timestamp()
-  }
-
   lifecycle_commands {
     create = file("${path.module}/scripts/cluster_install.sh")
     delete = file("${path.module}/scripts/cluster_destroy.sh")
@@ -200,6 +196,11 @@ data "local_file" "admin_password" {
   filename    = local.admin_password_content_path
 }
 
+data "local_file" "ocm_cluster_id" {
+  depends_on  = [ null_resource.get_cluster_details, null_resource.get_cluster_id ]
+  filename    = local.cluster_id_file
+}
+
 ## Create Cluster Details Secret SecretManager
 resource "google_secret_manager_secret" "cluster_details_secret" {
   depends_on      = [ data.local_file.admin_password ]
@@ -238,12 +239,13 @@ resource "google_secret_manager_secret_iam_binding" "cluster_details_secret_bind
 
 locals {
   depends_on = [ 
-    time_sleep.wait_for_cluster,
-    google_secret_manager_secret.cluster_details_secret
+    google_secret_manager_secret.cluster_details_secret,
+    data.local_file.ocm_cluster_id
   ]
 
   cluster_details = {
     cluster_name      = trimspace(var.cluster_name)
+    ocm_cluster_id    = trimspace(data.local_file.ocm_cluster_id.content)
     console_url       = trimspace(data.local_file.console_url.content)
     api_server_url    = trimspace(data.local_file.api_server_url.content)
     admin_username    = trimspace(data.local_file.admin_username.content)
@@ -264,7 +266,10 @@ resource "google_secret_manager_secret_version" "store_cluster_details" {
 }
 
 resource "time_sleep" "wait_for_secret_store" {
-  depends_on      = [ google_secret_manager_secret_version.store_cluster_details ]
+  depends_on      = [ 
+    google_secret_manager_secret_version.store_cluster_details,
+    null_resource.grant_cluster_admin_role
+  ]
   create_duration = "60s"
 }
 
@@ -337,7 +342,9 @@ resource "null_resource" "cleanup_sensitive_data" {
       echo 'DO NOT DELETE' > $idp_cluster_admin_tenant_file && \
       echo 'DO NOT DELETE' > $cluster_id_file && \
       echo 'DO NOT DELETE' > $default_idp_id_file && \
-      echo 'DO NOT DELETE' > $ocm_token_file
+      echo 'DO NOT DELETE' > $default_admin_user_id_file && \
+      echo 'DO NOT DELETE' > $ocm_token_file && \
+      echo 'DO NOT DELETE' > $current_user_file
     EOT
 
     environment = {
@@ -354,6 +361,7 @@ resource "null_resource" "cleanup_sensitive_data" {
       default_idp_id_file            = local.default_idp_id_file
       default_admin_user_id_file     = local.default_admin_user_id_file
       ocm_token_file                 = local.ocm_token_file
+      current_user_file              = local.current_user_file
     }
   }
 
