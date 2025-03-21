@@ -1,2 +1,0 @@
-Resource Applied:
-- config.imageregistry.operator.openshift.io/cluster

@@ -1,4 +1,0 @@
-# Set flag to true to enable the self-provisioner role.
-disableSelfProvisioner: false
-# Set the email of the cluster administrator.
-clusterAdminEmail: cluster-admin@example.com

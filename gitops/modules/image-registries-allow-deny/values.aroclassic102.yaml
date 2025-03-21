@@ -1,8 +1,0 @@
-clusterName: "aroclassic102"
-
-keyVaultName: "stig0015-key-vault"
-patchSchedule: "*/5 * * * *"
-
-registriesTrustedCerts: # Provide list of registry and key vault secret name
-  - registryHost: hostname.example.com
-    caKeyVaultSecretName: hostname-example-com-registry-certificates
