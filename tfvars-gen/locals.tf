@@ -10,8 +10,8 @@ locals {
   wif_sa_name                            = format("%s-%s-%s", var.department, var.platform_environment, var.cluster_name)
 
   
-  scratch_dir                            = "${path.module}/../.tmp"
-  current_user_file                      = format("%s/current_user.txt", local.scratch_dir)
+  scratch_dir                            = "${path.module}/../.scratch_dir"
+  current_user_file                      = format("%s/current_user", local.scratch_dir)
   current_user                           = trimspace(data.local_file.current_user.content)
 
   # DERIVED VARS

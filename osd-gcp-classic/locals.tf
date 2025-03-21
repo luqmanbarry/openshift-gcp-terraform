@@ -3,12 +3,34 @@ locals {
   # default_domain  = "poc-101"
   # ocp_pull_secret = "${path.module}/.pull-secret/pull-secret.json" # Read from local file
   
-  scratch_dir                = "${path.module}/../.tmp"
-  current_user_file          = format("%s/current_user.txt", local.scratch_dir)
+  scratch_dir                = "${path.module}/../.scratch_dir"
+  ocm_token_file             = format("%s/ocm_token_file", local.scratch_dir)
+  current_user_file          = format("%s/current_user", local.scratch_dir)
   current_user               = trimspace(data.local_file.current_user.content)
-  ocp_pull_secret_file       = format("%s/ocp_pull_secret.txt", local.scratch_dir)
-  gcp_sa_keyfile             = format("%s/gcp_sa_keyfile.txt", local.scratch_dir)
+  ocp_pull_secret_file       = format("%s/ocp_pull_secret", local.scratch_dir)
+  gcp_sa_keyfile             = format("%s/gcp_sa_keyfile", local.scratch_dir)
   additional_trust_bundle    = format("%s/additional_trust_bundle.pem", local.scratch_dir)
+  cluster_id_file            = format("%s/cluster_id_file", local.scratch_dir)
+  default_idp_id_file        = format("%s/default_idp_id_file", local.scratch_dir)
+  default_admin_user_id_file = format("%s/default_admin_user_id_file", local.scratch_dir)
+  htpasswd_file              = format("%s/htpasswd_file", local.scratch_dir)
+  htpasswd_idp_payload_file  = format("%s/htpasswd_idp_payload.json", local.scratch_dir)
+  idp_cluster_admin_tenant_file = format("%s/idp_cluster_admin_tenant_file.json", local.scratch_dir)
+  default_idp_name           = "system-admin"
+  default_user_group         = "cluster-admins"
+  htpasswd_idp_payload_json  = jsonencode({
+    type           = "HTPasswdIdentityProvider"
+    mapping_method = "claim"
+    name           = local.default_idp_name
+    htpasswd       = {
+      username = format("%s", random_uuid.admin_username.result)
+      password = format("%s", random_password.admin_password.result)
+    }
+  })
+  idp_cluster_admin_tenant      = jsonencode({
+    id = format("%s", random_uuid.admin_username.result)
+  })
+  
 
   cluster_sa_keyfile_secret  = format("%s-%s-%s-keyfile", var.department, var.platform_environment, var.cluster_name)
 
@@ -34,17 +56,4 @@ locals {
   )
 
   managed_resource_group_name = format("%s-resources", var.cluster_project)
-
-  cluster_details = {
-    cluster_name      = trimspace(var.cluster_name)
-    console_url       = trimspace(data.local_file.console_url.content)
-    api_server_url    = trimspace(data.local_file.api_server_url.content)
-    admin_username    = trimspace(data.local_file.admin_username.content)
-    admin_password    = trimspace(data.local_file.admin_password.content)
-    ingress_lb_ip     = trimspace(data.local_file.ingress_lb_ip.content)
-    api_server_lb_ip  = trimspace(data.local_file.api_server_lb_ip.content)
-    openshift_version = var.ocp_version
-    service_account_name    = var.cluster_service_account_name
-    service_account_keyfile = var.enable_gcp_wif_authentication ? "" : data.google_secret_manager_secret_version.cluster_sa_keyfile[0].secret_data
-  }
 }

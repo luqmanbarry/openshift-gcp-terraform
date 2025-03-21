@@ -3,8 +3,8 @@ locals {
   custom_dns_domain_prefix                         = format("%s.%s.%s.%s", var.cluster_name, var.platform_environment, var.region, var.department)
   custom_dns_domain_name                           = format("%s.%s", local.custom_dns_domain_prefix, var.base_dns_zone_name)
 
-  scratch_dir                = "${path.module}/../.tmp"
-  current_user_file          = format("%s/current_user.txt", local.scratch_dir)
+  scratch_dir                = "${path.module}/../.scratch_dir"
+  current_user_file          = format("%s/current_user", local.scratch_dir)
   cluster_sa_check_file      = format("%s/cluster_sa_check_file.txt", local.scratch_dir)
   wif_pool_check_file        = format("%s/wif_pool_check_file.txt", local.scratch_dir)
 

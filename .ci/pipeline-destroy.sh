@@ -12,7 +12,7 @@ if [ -f $INPUTS ]; then
   . $INPUTS
 else
   echo "Could not find the file. Check and try again..."
-  echo "Example: .ci/pipeline-create.sh .ci/user-inputs.sh"
+  echo "Example: .ci/pipeline-destroy.sh .ci/user-inputs.sh"
   exit 1
 fi
 

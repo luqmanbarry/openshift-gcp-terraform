@@ -158,7 +158,7 @@ cluster_project="example-gcp-project"
 
 cost_center="570633"
 
-ocp_version="4.18.3"
+ocp_version="4.18.4"
 
 acmhub_registration_enabled=false
 

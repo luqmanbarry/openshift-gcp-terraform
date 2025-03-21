@@ -4,7 +4,7 @@ data "google_client_config" "current" {}
 # Use a local-exec provisioner to get the logged-in username
 resource "null_resource" "get_current_user" {
   provisioner "local-exec" {
-    interpreter = [ "/bin/bash", "-c" ]
+    interpreter = [ "/bin/sh", "-c" ]
     command = "gcloud auth list --filter=status:ACTIVE --format=\"value(account)\" > $CURRENT_USER_FILE"
     environment = {
       CURRENT_USER_FILE = local.current_user_file
@@ -19,14 +19,6 @@ data "local_file" "current_user" {
   depends_on = [null_resource.get_current_user]
 }
 
-resource "random_string" "random_lower_str" {
-  length           = 7
-  numeric          = false
-  special          = false
-  upper            = false
-}
-
-
 data "google_project" "cluster_project" {
   project_id = var.cluster_project
 }
@@ -34,6 +26,11 @@ data "google_project" "cluster_project" {
 data "google_secret_manager_secret_version" "ocm_token" {
   secret  = var.ocm_token_secret_name
   project = var.ocp_pull_secret_secret_project
+}
+
+resource "local_file" "save_ocm_token_to_file" {
+  content  = data.google_secret_manager_secret_version.ocm_token.secret_data
+  filename = local.ocm_token_file
 }
 
 data "google_secret_manager_secret_version" "cluster_sa_keyfile" {
@@ -56,15 +53,21 @@ resource "local_file" "additional_trust_bundle" {
 # OSD Cluster
 resource "shell_script" "cluster_install" {
 
-  # interpreter = ["/bin/bash", "-c"]
+  triggers = {
+    when_value_changed = timestamp()
+  }
 
   lifecycle_commands {
     create = file("${path.module}/scripts/cluster_install.sh")
     delete = file("${path.module}/scripts/cluster_destroy.sh")
   }
 
-  environment = {
+  sensitive_environment = {
     ocm_token                 = data.google_secret_manager_secret_version.ocm_token.secret_data
+    additional_trust_bundle   = local.additional_trust_bundle
+  }
+
+  environment = {
     cluster_name              = var.cluster_name
     private_cluster           = var.private_cluster
     vpc                       = var.vpc
@@ -88,7 +91,6 @@ resource "shell_script" "cluster_install" {
     http_proxy                = var.proxy.enable ? var.proxy.http_proxy : ""
     https_proxy               = var.proxy.enable ? var.proxy.https_proxy : ""
     no_proxy                  = var.proxy.enable ? var.proxy.no_proxy : ""
-    additional_trust_bundle   = local.additional_trust_bundle
   }
 }
 
@@ -97,20 +99,34 @@ resource "time_sleep" "wait_for_cluster" {
   create_duration = "300s"
 }
 
+resource "null_resource" "get_cluster_id" {
+  depends_on = [ time_sleep.wait_for_cluster ]
+
+  provisioner "local-exec" {
+    interpreter = [ "/bin/sh", "-c" ]
+    command = "ocm get /api/clusters_mgmt/v1/clusters --parameter search=\"name like '$CLUSTER%'\" | jq -r '.items[].id' | xargs > $CLUSTER_ID_FILE"
+    environment = {
+      CLUSTER         = var.cluster_name
+      CLUSTER_ID_FILE = local.cluster_id_file
+    }
+  }
+
+  triggers = {
+    always_run = timestamp()
+  }
+}
+
 # Get Cluster API Server
 resource "null_resource" "get_cluster_details" {
-  depends_on = [ time_sleep.wait_for_cluster ]
+  depends_on = [ time_sleep.wait_for_cluster, null_resource.get_cluster_id ]
 
   # Get Cluster Console URL
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = <<EOT
-      CLUSTER_ID=$(ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER%'" | jq -r '.items[].id')
-      ocm describe cluster $CLUSTER_ID --json | jq -r '.console.url' | xargs > $CONSOLE_URL_FILE
-    EOT
+    command = "ocm describe cluster $CLUSTER_ID --json | jq -r '.console.url' | xargs > $CONSOLE_URL_FILE"
 
     environment = {
-      CLUSTER             = var.cluster_name
+      CLUSTER_ID          = trimspace(file(local.cluster_id_file))
       CONSOLE_URL_FILE    = local.console_url_content_path
     }
   }
@@ -118,13 +134,10 @@ resource "null_resource" "get_cluster_details" {
   # Get Cluster Ingress LB IP
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = <<EOT
-      CLUSTER_ID=$(ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER%'" | jq -r '.items[].id')
-      ocm describe cluster $CLUSTER_ID --json | jq -r '.ingress.load_balancer_ip' | xargs > $INGRESS_IP_FILE
-    EOT
+    command = "ocm describe cluster $CLUSTER_ID --json | jq -r '.ingress.load_balancer_ip' | xargs > $INGRESS_IP_FILE"
 
     environment = {
-      CLUSTER             = var.cluster_name
+      CLUSTER_ID          = trimspace(file(local.cluster_id_file))
       INGRESS_IP_FILE     = local.ingress_lb_ip_content_path
     }
   }
@@ -132,13 +145,10 @@ resource "null_resource" "get_cluster_details" {
   # Get Cluster API Server URL
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = <<EOT
-      CLUSTER_ID=$(ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER%'" | jq -r '.items[].id')
-      ocm describe cluster $CLUSTER_ID --json | jq -r '.api.url' | xargs > $API_SERVER_URL_FILE
-    EOT
+    command = "ocm describe cluster $CLUSTER_ID --json | jq -r '.api.url' | xargs > $API_SERVER_URL_FILE"
 
     environment = {
-      CLUSTER             = var.cluster_name
+      CLUSTER_ID          = trimspace(file(local.cluster_id_file))
       API_SERVER_URL_FILE = local.api_server_url_content_path
     }
   }
@@ -146,34 +156,11 @@ resource "null_resource" "get_cluster_details" {
   # Get Cluster API Server LB IP
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = <<EOT
-      CLUSTER_ID=$(ocm get /api/clusters_mgmt/v1/clusters --parameter search="name like '$CLUSTER%'" | jq -r '.items[].id')
-      ocm describe cluster $CLUSTER_ID --json | '.api.load_balancer_ip' | xargs > $API_SERVER_IP_FILE
-    EOT
+    command = "ocm describe cluster $CLUSTER_ID --json | '.api.load_balancer_ip' | xargs > $API_SERVER_IP_FILE"
 
     environment = {
-      CLUSTER             = var.cluster_name
+      CLUSTER_ID          = trimspace(file(local.cluster_id_file))
       API_SERVER_IP_FILE  = local.api_server_lb_ip_content_path
-    }
-  }
-
-  # Get Cluster kubeadmin username
-  provisioner "local-exec" {
-    interpreter = [ "/bin/sh", "-c" ]
-    command = "echo 'kubeadmin' > $ADMIN_USERNAME_FILE"
-    environment = {
-      CLUSTER             = var.cluster_name
-      ADMIN_USERNAME_FILE = local.admin_username_content_path
-    }
-  }
-
-  # Get Cluster kubeadmin password
-  provisioner "local-exec" {
-    interpreter = [ "/bin/sh", "-c" ]
-    command = "ocm describe cluster \"$CLUSTER\" --json | jq -r '.admin.password' | xargs > $ADMIN_PASSWORD_FILE"
-    environment = {
-      CLUSTER             = var.cluster_name
-      ADMIN_PASSWORD_FILE = local.admin_password_content_path
     }
   }
 
@@ -187,24 +174,29 @@ data "local_file" "console_url" {
   depends_on  = [ null_resource.get_cluster_details ]
   filename    = local.console_url_content_path
 }
+
 data "local_file" "ingress_lb_ip" {
   depends_on  = [ null_resource.get_cluster_details, data.local_file.console_url ]
   filename    = local.ingress_lb_ip_content_path
 }
+
 data "local_file" "api_server_url" {
   depends_on  = [ null_resource.get_cluster_details, data.local_file.ingress_lb_ip ]
   filename    = local.api_server_url_content_path
 }
+
 data "local_file" "api_server_lb_ip" {
   depends_on  = [ null_resource.get_cluster_details, data.local_file.api_server_url ]
   filename    = local.api_server_lb_ip_content_path
 }
+
 data "local_file" "admin_username" {
-  depends_on  = [ null_resource.get_cluster_details, data.local_file.api_server_lb_ip ]
+  depends_on  = [ null_resource.get_cluster_details, data.local_file.api_server_lb_ip, local_file.save_username_to_file ]
   filename    = local.admin_username_content_path
 }
+
 data "local_file" "admin_password" {
-  depends_on  = [ null_resource.get_cluster_details, data.local_file.admin_username ]
+  depends_on  = [ null_resource.get_cluster_details, data.local_file.admin_username, local_file.save_password_to_file ]
   filename    = local.admin_password_content_path
 }
 
@@ -242,6 +234,26 @@ resource "google_secret_manager_secret_iam_binding" "cluster_details_secret_bind
     length(regexall(".iam.gserviceaccount.com$", local.current_user)) > 0 ? format("serviceAccount:%s", local.current_user) : format("user:%s", local.current_user)
   ]
   
+}
+
+locals {
+  depends_on = [ 
+    time_sleep.wait_for_cluster,
+    google_secret_manager_secret.cluster_details_secret
+  ]
+
+  cluster_details = {
+    cluster_name      = trimspace(var.cluster_name)
+    console_url       = trimspace(data.local_file.console_url.content)
+    api_server_url    = trimspace(data.local_file.api_server_url.content)
+    admin_username    = trimspace(data.local_file.admin_username.content)
+    admin_password    = trimspace(data.local_file.admin_password.content)
+    ingress_lb_ip     = trimspace(data.local_file.ingress_lb_ip.content)
+    api_server_lb_ip  = trimspace(data.local_file.api_server_lb_ip.content)
+    openshift_version = var.ocp_version
+    service_account_name    = var.cluster_service_account_name
+    service_account_keyfile = var.enable_gcp_wif_authentication ? "" : data.google_secret_manager_secret_version.cluster_sa_keyfile[0].secret_data
+  }
 }
 
 ## Store the Cluster Details
@@ -308,19 +320,40 @@ resource "time_sleep" "wait_for_secret_store" {
 
 # Cleanup sensitive data from fileysystem
 resource "null_resource" "cleanup_sensitive_data" {
-  # depends_on = [ azurerm_dns_a_record.ingress_dns_record, azurerm_dns_a_record.api_dns_record ]
+  depends_on = [ time_sleep.wait_for_secret_store ]
 
   # Get Cluster Console URL
   provisioner "local-exec" {
     interpreter = [ "/bin/sh", "-c" ]
-    command = "echo 'DO NOT DELETE' > $CONSOLE_URL_FILE;echo 'DO NOT DELETE' > $INGRESS_IP_FILE;echo 'DO NOT DELETE' > $API_SERVER_URL_FILE;echo 'DO NOT DELETE' > $API_SERVER_IP_FILE;echo 'DO NOT DELETE' > $ADMIN_USERNAME_FILE;echo 'DO NOT DELETE' > $ADMIN_PASSWORD_FILE;"
+    command = <<EOT
+      echo 'DO NOT DELETE' > $console_url_content_path && \
+      echo 'DO NOT DELETE' > $ingress_lb_ip_content_path && \
+      echo 'DO NOT DELETE' > $api_server_url_content_path && \
+      echo 'DO NOT DELETE' > $api_server_lb_ip_content_path && \
+      echo 'DO NOT DELETE' > $admin_username_content_path && \
+      echo 'DO NOT DELETE' > $admin_password_content_path && \
+      echo 'DO NOT DELETE' > $htpasswd_file && \
+      echo 'DO NOT DELETE' > $htpasswd_idp_payload_file && \
+      echo 'DO NOT DELETE' > $idp_cluster_admin_tenant_file && \
+      echo 'DO NOT DELETE' > $cluster_id_file && \
+      echo 'DO NOT DELETE' > $default_idp_id_file && \
+      echo 'DO NOT DELETE' > $ocm_token_file
+    EOT
+
     environment = {
-      CONSOLE_URL_FILE    = local.console_url_content_path
-      INGRESS_IP_FILE     = local.ingress_lb_ip_content_path
-      API_SERVER_URL_FILE = local.api_server_url_content_path
-      API_SERVER_IP_FILE  = local.api_server_lb_ip_content_path
-      ADMIN_USERNAME_FILE = local.admin_username_content_path
-      ADMIN_PASSWORD_FILE = local.admin_password_content_path
+      console_url_content_path       = local.console_url_content_path
+      ingress_lb_ip_content_path     = local.ingress_lb_ip_content_path
+      api_server_url_content_path    = local.api_server_url_content_path
+      api_server_lb_ip_content_path  = local.api_server_lb_ip_content_path
+      admin_username_content_path    = local.admin_username_content_path
+      admin_password_content_path    = local.admin_password_content_path
+      htpasswd_file                  = local.htpasswd_file
+      htpasswd_idp_payload_file      = local.htpasswd_idp_payload_file
+      idp_cluster_admin_tenant_file  = local.idp_cluster_admin_tenant_file
+      cluster_id_file                = local.cluster_id_file
+      default_idp_id_file            = local.default_idp_id_file
+      default_admin_user_id_file     = local.default_admin_user_id_file
+      ocm_token_file                 = local.ocm_token_file
     }
   }
 

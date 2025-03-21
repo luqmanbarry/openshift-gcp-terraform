@@ -1,7 +1,7 @@
 locals {
 
-  scratch_dir                = "${path.module}/../.tmp"
-  current_user_file          = format("%s/current_user.txt", local.scratch_dir)
+  scratch_dir                = "${path.module}/../.scratch_dir"
+  current_user_file          = format("%s/current_user", local.scratch_dir)
 
   tfstate_resource_name      = format("%s-%s-tfstate", var.department, var.platform_environment)
 
