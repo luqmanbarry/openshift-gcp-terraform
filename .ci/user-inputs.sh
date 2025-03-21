@@ -7,7 +7,7 @@ export TF_VAR_root_dns_domain="sama-wat.com" # FOR NOW USE DEFAULT AZURE PROVIDE
 
 # OSD on GCP CLUSTER INFO
 export TF_VAR_platform_environment="dev"
-export TF_VAR_cluster_name="osd-classic-101" # Max str length 15 characters
+export TF_VAR_cluster_name="osd-lbarry-101" # Max str length 15 characters
 export TF_VAR_enable_gcp_wif_authentication=true
 export TF_VAR_cluster_project="example-gcp-project" # Can be different from cluster_name
 export TF_VAR_ocm_token_secret_name="osd-gcp-ocm-token"
@@ -19,16 +19,16 @@ export TF_VAR_enable_autoscaling=true
 export TF_VAR_default_domain_prefix=""  # Max 5 chars - Must be unique
 export TF_VAR_autoscaling_max_replicas=12
 export TF_VAR_use_auto_generated_domain=true # if set to false, you will have to configure DNS Zones
-export TF_VAR_base_dns_name="openshift.sama-wat.com"
-export TF_VAR_base_dns_zone_name="openshift.sama-wat.com"
+export TF_VAR_base_dns_name="openshift.example.com"
+export TF_VAR_base_dns_zone_name="openshift.example.com"
 export TF_VAR_base_dns_zone_resource_group="osd-dns-zones"
 export TF_VAR_region="us-central1"
 export TF_VAR_default_zone="us-central1-a"
 export TF_VAR_availability_zones='["us-central1-a", "us-central1-b", "us-central1-c"]'
 # Default VPC CIDR: 10.0.0.0/8
 export TF_VAR_vpc_cidr="10.0.0.0/8"  ## Default value for GCP VPC
-export TF_VAR_master_subnet_cidr="10.1.90.0/23"  # Use /23 or larger
-export TF_VAR_worker_subnet_cidr="10.2.90.0/23"  # Use /23 or larger
+export TF_VAR_master_subnet_cidr="10.1.90.0/24"  # Use /24 or larger
+export TF_VAR_worker_subnet_cidr="10.2.90.0/24"  # Use /24 or larger
 export TF_VAR_worker_node_count=3
 export TF_VAR_worker_machine_type="n2-standard-8"
 

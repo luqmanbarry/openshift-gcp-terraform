@@ -31,7 +31,8 @@ then
     --mode="auto" \
     --role-prefix="${wif_role_prefix}"
   
-  sleep 300
+  echo "Waiting for WIF service accounts to sync across the GCP environment"
+  sleep 600
 
   echo "Creating Workload Identity Federation cluster..."
   ocm create cluster "${cluster_name}" \
