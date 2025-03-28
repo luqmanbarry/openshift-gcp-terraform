@@ -198,6 +198,6 @@ custom_dns_domain_name="osd-lbarry-101.dev.us-central1.sales.openshift.example.c
 
 acmhub_cluster_env="dev"
 
-cluster_infra_tags={"cluster_name"="osd-lbarry-101","cluster_type"="osd-gcp","cost_center"="570633","created_by"="","environment"="dev","organization"="sales","team_owner"="platform-ops"}
+cluster_infra_tags={"cluster_name"="osd-lbarry-101","cluster_type"="osd-gcp","cost_center"="570633","created_by"="lbarry_redhat-com","environment"="dev","organization"="sales","team_owner"="platform-ops"}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%% END: DERIVED VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -24,7 +24,7 @@ resource "random_password" "admin_password" {
   length           = 50
   special          = true
   min_special      = 3
-  override_special = "!#$%&*()-_=+[]{}:?"
+  override_special = "!#$%*()-_=+[]{}:?"
 
   lifecycle {
     replace_triggered_by = [ null_resource.run_every_time ]

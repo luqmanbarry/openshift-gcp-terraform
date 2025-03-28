@@ -32,7 +32,7 @@ then
     --role-prefix="${wif_role_prefix}"
   
   echo "Waiting for WIF service accounts to sync across the GCP environment"
-  sleep 600
+  sleep 60
 
   echo "Creating Workload Identity Federation cluster..."
   ocm create cluster "${cluster_name}" \
