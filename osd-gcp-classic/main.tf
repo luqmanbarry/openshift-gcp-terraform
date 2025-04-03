@@ -262,7 +262,7 @@ locals {
 resource "google_secret_manager_secret_version" "store_cluster_details" {
   secret = google_secret_manager_secret.cluster_details_secret.id
 
-  secret_data = jsonencode(local.cluster_details)
+  secret_data = base64encode(jsonencode(local.cluster_details))
 }
 
 resource "time_sleep" "wait_for_secret_store" {

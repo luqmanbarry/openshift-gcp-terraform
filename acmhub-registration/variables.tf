@@ -1,7 +1,7 @@
-variable "organization" {
+variable "department" {
   type        = string
-  description = "The business unit that owns the cluster."
-  default = "sales"
+  description = "The Organization folder. This could be seen as a department/business_unit"
+  default = "changeme"
 }
 
 variable "cluster_name" {

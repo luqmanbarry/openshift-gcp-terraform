@@ -1,10 +1,13 @@
-variable "azure_cloud_environment" {
-  type = string
-  description = "The Azure Cloud Environment. Options: environment=public|usgovernment|china|german"
-  validation {
-    condition = contains(["environment", "public", "usgovernment", "usgovernmentl4", "usgovernmentl5", "china", "german"], var.azure_cloud_environment)
-    error_message = "Expected values are one of: environment, public, usgovernment, usgovernmentl4, usgovernmentl5, china, german"
-  }
+variable "region" {
+  type    = string
+  default = "us-south1"
+  description = "The region where the OSD cluster is created"
+}
+
+variable "default_zone" {
+  type        = string
+  default = "us-south1-a"
+  description = "The GCP zone"
 }
 
 variable "kube_home_dir" {
@@ -33,21 +36,27 @@ variable "acmhub_registration_enabled" {
   default = false
 }
 
-variable "cluster_details_vault_secret_name" {
+variable "cluster_details_secret_name" {
   type = string
   default = "openshift-OCP_ENV-CLUSTER_NAME-cluster-details"
-  description = "The name of the secret that will hold the cluster admin details"
+  description = "The name of the secret that will hold the cluster authN details"
 }
 
-variable "acmhub_details_vault_secret_name" {
+variable "cluster_project" {
+  type        = string
+  description = "The Cluster GCP project in which to create the cluster"
+  default = "gcp-classic-001"
+}
+
+variable "acmhub_details_secret_name" {
   type = string
   default = "openshift-OCP_ENV-ACMHUB_NAME-cluster-details"
-  description = "The name of the KV secret that will hold the ACMHUB admin details"
+  description = "The name of the secret that holds the ACMHUB cluster authN details"
 }
 
-variable "key_vault_id" {
-  type = string
-  description = "The Azure KeyVault ID"
-  default = "looked-up"
+variable "acmhub_cluster_project" {
+  type        = string
+  description = "The ACM-HUB Cluster GCP project"
+  default = "acmhub-cluster-001"
 }
 

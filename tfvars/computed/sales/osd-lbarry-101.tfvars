@@ -150,7 +150,7 @@ ocm_token_secret_name="osd-gcp-ocm-token"
 
 cluster_details_secret_name="openshift-dev-osd-lbarry-101-cluster-details"
 
-acmhub_details_secret_name="openshift-dev-osd-acm-hub-102-cluster-details"
+acmhub_details_secret_name="openshift-dev-acmhub-lbarry01-cluster-details"
 
 cluster_service_account_name=""
 
@@ -170,7 +170,7 @@ managed_cluster_kubeconfig_filename="/Users/luqman/workspace/guides/osd-classic-
 
 acmhub_kubeconfig_filename="/Users/luqman/workspace/guides/osd-classic-gcp-terraform/.kube/acm_hub/config"
 
-acmhub_cluster_name="osd-acm-hub-102"
+acmhub_cluster_name="acmhub-lbarry01"
 
 worker_machine_type="n2-standard-8"
 
