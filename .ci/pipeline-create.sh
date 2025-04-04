@@ -65,93 +65,93 @@ else
   cd ${WORKING_DIRECTORY}
 fi
 
-# echo "#########################################################################################################"
-# TF_MODULE="gcp-infra"
-# BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# BACKEND_PATH="${TF_MODULE}"
-# TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/admin/admin.tfvars"
-# echo "=================================================="
-# echo "==> Module - $TF_MODULE"
-# echo "=================================================="
-# cd "${TF_MODULE}"
-# rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
-# unset TF_WORKSPACE
-# terraform init \
-#   -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
-#   -backend-config="prefix=${BACKEND_KEY}"
-# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# terraform apply "$TF_MODULE.plan"
-# # if [ "$TF_VAR_use_azure_provided_domain" = "false" ];
-# # then
-# #   echo
-# #   echo "===> Cluster child DNS Zone provisonned successfully. Add the DNS Zone NS records to the domain resolver (registrar)."
-# #   echo "===> Use the nslookup command to verify the domain is resolvable: nslookup -type=NS mydoman.example.com"
-# #   read -p "===> Have you confirmed DNS resolution of the domain? Enter YES to continue, and any other character to quit: " USER_RES
-# #   if [ "$USER_RES" = "YES" ] || [ "$USER_RES" = "yes" ] || [ "$USER_RES" = "Yes" ];
-# #   then
-# #     echo "---> Proceeding to the remaining stages after a short pause..."
-# #     sleep 15
-# #     echo
-# #   else
-# #     echo "---> You did not enter 'YES'. Exiting..."
-# #     exit 1
-# #   fi
-# # fi
-# cd ${WORKING_DIRECTORY}
+echo "#########################################################################################################"
+TF_MODULE="gcp-infra"
+BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+BACKEND_PATH="${TF_MODULE}"
+TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/admin/admin.tfvars"
+echo "=================================================="
+echo "==> Module - $TF_MODULE"
+echo "=================================================="
+cd "${TF_MODULE}"
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
+unset TF_WORKSPACE
+terraform init \
+  -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
+  -backend-config="prefix=${BACKEND_KEY}"
+terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+terraform apply "$TF_MODULE.plan"
+# if [ "$TF_VAR_use_azure_provided_domain" = "false" ];
+# then
+#   echo
+#   echo "===> Cluster child DNS Zone provisonned successfully. Add the DNS Zone NS records to the domain resolver (registrar)."
+#   echo "===> Use the nslookup command to verify the domain is resolvable: nslookup -type=NS mydoman.example.com"
+#   read -p "===> Have you confirmed DNS resolution of the domain? Enter YES to continue, and any other character to quit: " USER_RES
+#   if [ "$USER_RES" = "YES" ] || [ "$USER_RES" = "yes" ] || [ "$USER_RES" = "Yes" ];
+#   then
+#     echo "---> Proceeding to the remaining stages after a short pause..."
+#     sleep 15
+#     echo
+#   else
+#     echo "---> You did not enter 'YES'. Exiting..."
+#     exit 1
+#   fi
+# fi
+cd ${WORKING_DIRECTORY}
 
-# echo "#########################################################################################################"
-# TF_MODULE="tfvars-gen"
-# BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# BACKEND_PATH="${TF_MODULE}"
-# TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/admin/admin.tfvars"
-# echo "=================================================="
-# echo "==> Module - $TF_MODULE"
-# echo "=================================================="
-# cd "${TF_MODULE}"
-# rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
-# unset TF_WORKSPACE
-# terraform init \
-#   -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
-#   -backend-config="prefix=${BACKEND_KEY}"
-# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# terraform apply "$TF_MODULE.plan"
-# cd ${WORKING_DIRECTORY}
+echo "#########################################################################################################"
+TF_MODULE="tfvars-gen"
+BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+BACKEND_PATH="${TF_MODULE}"
+TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/admin/admin.tfvars"
+echo "=================================================="
+echo "==> Module - $TF_MODULE"
+echo "=================================================="
+cd "${TF_MODULE}"
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
+unset TF_WORKSPACE
+terraform init \
+  -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
+  -backend-config="prefix=${BACKEND_KEY}"
+terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+terraform apply "$TF_MODULE.plan"
+cd ${WORKING_DIRECTORY}
 
-# echo "#########################################################################################################"
-# TF_MODULE="git-tfvars-file"
-# BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# BACKEND_PATH="${TF_MODULE}"
-# TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/admin/admin.tfvars"
-# echo "=================================================="
-# echo "==> Module - $TF_MODULE"
-# echo "=================================================="
-# cd "${TF_MODULE}"
-# rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
-# unset TF_WORKSPACE
-# terraform init \
-#   -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
-#   -backend-config="prefix=${BACKEND_KEY}"
-# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# terraform apply "$TF_MODULE.plan"
-# cd ${WORKING_DIRECTORY}
+echo "#########################################################################################################"
+TF_MODULE="git-tfvars-file"
+BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+BACKEND_PATH="${TF_MODULE}"
+TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/admin/admin.tfvars"
+echo "=================================================="
+echo "==> Module - $TF_MODULE"
+echo "=================================================="
+cd "${TF_MODULE}"
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
+unset TF_WORKSPACE
+terraform init \
+  -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
+  -backend-config="prefix=${BACKEND_KEY}"
+terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+terraform apply "$TF_MODULE.plan"
+cd ${WORKING_DIRECTORY}
 
-# echo "#########################################################################################################"
-# TF_MODULE="osd-gcp-classic"
-# BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# BACKEND_PATH="${TF_MODULE}"
-# TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_department}/${TF_VAR_cluster_name}.tfvars"
-# echo "=================================================="
-# echo "==> Module - $TF_MODULE"
-# echo "=================================================="
-# cd "${TF_MODULE}"
-# rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
-# unset TF_WORKSPACE
-# terraform init \
-#   -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
-#   -backend-config="prefix=${BACKEND_KEY}"
-# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# terraform apply "$TF_MODULE.plan"
-# cd ${WORKING_DIRECTORY}
+echo "#########################################################################################################"
+TF_MODULE="osd-gcp-classic"
+BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+BACKEND_PATH="${TF_MODULE}"
+TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_department}/${TF_VAR_cluster_name}.tfvars"
+echo "=================================================="
+echo "==> Module - $TF_MODULE"
+echo "=================================================="
+cd "${TF_MODULE}"
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
+unset TF_WORKSPACE
+terraform init \
+  -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
+  -backend-config="prefix=${BACKEND_KEY}"
+terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+terraform apply "$TF_MODULE.plan"
+cd ${WORKING_DIRECTORY}
 
 echo "#########################################################################################################"
 TF_MODULE="kube-config"
@@ -186,7 +186,7 @@ cd ${WORKING_DIRECTORY}
 # #   unset TF_WORKSPACE
 # #   terraform init \
 # #     -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
-# #     -backend-config="key=${BACKEND_KEY}"
+# #     -backend-config="prefix=${BACKEND_KEY}"
 # #   terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 # #   terraform apply "$TF_MODULE.plan"
 # #   cd ${WORKING_DIRECTORY}
@@ -205,28 +205,28 @@ cd ${WORKING_DIRECTORY}
 # unset TF_WORKSPACE
 # terraform init \
 #   -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
-#   -backend-config="key=${BACKEND_KEY}"
+#   -backend-config="prefix=${BACKEND_KEY}"
 # terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 # terraform apply "$TF_MODULE.plan"
 # cd ${WORKING_DIRECTORY}
 
-# if [ "$TF_VAR_acmhub_registration_enabled" = "true" ]; 
-# then
-#   echo "#########################################################################################################"
-#   TF_MODULE="acmhub-registration"
-#   BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-#   BACKEND_PATH="${TF_MODULE}"
-#   TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_organization}/${TF_VAR_subscription_id}/${TF_VAR_cluster_name}.tfvars"
-#   echo "=================================================="
-#   echo "===========> Module - $TF_MODULE "
-#   echo "=================================================="
-#   cd "${TF_MODULE}"
-#   rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
-#   unset TF_WORKSPACE
-#   terraform init \
-#     -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
-#     -backend-config="key=${BACKEND_KEY}"
-#   terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-#   terraform apply "$TF_MODULE.plan"
-# cd ${WORKING_DIRECTORY}
-# fi
+if [ "$TF_VAR_acmhub_registration_enabled" = "true" ]; 
+then
+  echo "#########################################################################################################"
+  TF_MODULE="acmhub-registration"
+  BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+  BACKEND_PATH="${TF_MODULE}"
+  TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_department}/${TF_VAR_cluster_name}.tfvars"
+  echo "=================================================="
+  echo "===========> Module - $TF_MODULE "
+  echo "=================================================="
+  cd "${TF_MODULE}"
+  rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
+  unset TF_WORKSPACE
+  terraform init \
+    -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
+    -backend-config="prefix=${BACKEND_KEY}"
+  terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+  terraform apply "$TF_MODULE.plan"
+cd ${WORKING_DIRECTORY}
+fi

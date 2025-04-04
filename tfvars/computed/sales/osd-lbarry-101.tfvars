@@ -160,7 +160,7 @@ cost_center="570633"
 
 ocp_version="4.18.4"
 
-acmhub_registration_enabled=false
+acmhub_registration_enabled=true
 
 kube_home_dir="/Users/luqman/workspace/guides/osd-classic-gcp-terraform"
 

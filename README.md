@@ -207,6 +207,12 @@ For the cluster to be accessible at the console, api urls, the name servers of t
 .ci/pipeline-create.sh .ci/user-inputs.sh | tee osd-classic-create.log
 ```
 
+After the cluster provisioning is complete, details such as `console_url, api_usrl, admin_username, admin_password` will be put in a Secret with suffix `<cluster-name>-details`. Search for that secret in the GCP project, copy the content and base64 decode it.
+
+```sh
+echo -n "<BASE64_ENCODED_STRING>" | base64 -d > cluster-details.json
+```
+
 ## Cluster Teardown
 
 ```sh

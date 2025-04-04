@@ -94,7 +94,7 @@ resource "google_compute_router_nat" "worker_router_nat" {
 
 # Create a firewall rule to allow internal traffic
 resource "google_compute_firewall" "allow_internal_traffic" {
-  name    = "osd-allow-internal-traffic"
+  name    = format("%s-allow-internal-traffic", var.cluster_name)
   network = google_compute_network.vpc_network.name
 
   allow {

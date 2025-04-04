@@ -92,7 +92,7 @@ resource "shell_script" "cluster_install" {
 
 resource "time_sleep" "wait_for_cluster" {
   depends_on      = [ shell_script.cluster_install ]
-  create_duration = "300s"
+  create_duration = "600s"
 }
 
 resource "null_resource" "get_cluster_id" {

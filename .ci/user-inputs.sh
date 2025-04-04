@@ -41,7 +41,7 @@ export TF_ENV="${TF_VAR_platform_environment}-${TF_VAR_cluster_name}"
 
 # ACMHUB DETAILS
 # Toggle this flag to true if you have an ACMHUB instance and it's credentials are available in KeyVault
-export TF_VAR_acmhub_registration_enabled=false
+export TF_VAR_acmhub_registration_enabled=true
 export TF_VAR_acmhub_cluster_details_secret_name="openshift-dev-acmhub-lbarry01"
 export TF_VAR_acmhub_cluster_name="acmhub-lbarry01"
 export TF_VAR_acmhub_cluster_project="example-gcp-project"
