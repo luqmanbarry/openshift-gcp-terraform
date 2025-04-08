@@ -1,0 +1,13 @@
+{
+  "admin_password": "{;M`Rl=!Nl9-'-%J')JVU7B(~f`K;N$mnc$:(7;`B:u}p?V-ep",
+  "admin_username": "a4fc8d71-b7cf-6a85-9ee5-f7eaa602ecf7",
+  "api_server_lb_ip": "",
+  "api_server_url": "https://api.osd-lbarry-101.6o3z.p2.openshiftapps.com:6443",
+  "cluster_name": "osd-lbarry-101",
+  "console_url": "https://console-openshift-console.apps.osd-lbarry-101.6o3z.p2.openshiftapps.com",
+  "ingress_lb_ip": "null",
+  "ocm_cluster_id": "2hq8l50c6jb5kvcf7nbcqbu7t3c50tqp",
+  "openshift_version": "4.18.4",
+  "service_account_keyfile": "",
+  "service_account_name": ""
+}

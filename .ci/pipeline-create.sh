@@ -171,26 +171,26 @@ terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
 cd ${WORKING_DIRECTORY}
 
-# # if [ "$TF_VAR_use_azure_provided_domain" = "false" ];
-# # then
-# #   echo "#########################################################################################################"
-# #   TF_MODULE="dns-tls-certs"
-# #   BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# #   BACKEND_PATH="${TF_MODULE}"
-# #   TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_organization}/${TF_VAR_subscription_id}/${TF_VAR_cluster_name}.tfvars"
-# #   echo "=================================================="
-# #   echo "===========> Module - $TF_MODULE "
-# #   echo "=================================================="
-# #   cd "${TF_MODULE}"
-# #   rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
-# #   unset TF_WORKSPACE
-# #   terraform init \
-# #     -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
-# #     -backend-config="prefix=${BACKEND_KEY}"
-# #   terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# #   terraform apply "$TF_MODULE.plan"
-# #   cd ${WORKING_DIRECTORY}
-# # fi
+if [ "$TF_VAR_use_auto_generated_domain" = "false" ];
+then
+  echo "#########################################################################################################"
+  TF_MODULE="dns-tls-certs"
+  BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+  BACKEND_PATH="${TF_MODULE}"
+  TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_organization}/${TF_VAR_subscription_id}/${TF_VAR_cluster_name}.tfvars"
+  echo "=================================================="
+  echo "===========> Module - $TF_MODULE "
+  echo "=================================================="
+  cd "${TF_MODULE}"
+  rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true) && (rm -rf *.tfstate || true) && (rm -rf *.tfstate.backup || true)
+  unset TF_WORKSPACE
+  terraform init \
+    -backend-config="bucket=${TF_VAR_tfstate_storage_bucket_name}" \
+    -backend-config="prefix=${BACKEND_KEY}"
+  terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+  terraform apply "$TF_MODULE.plan"
+  cd ${WORKING_DIRECTORY}
+fi
 
 # echo "#########################################################################################################"
 # TF_MODULE="bootstrap"

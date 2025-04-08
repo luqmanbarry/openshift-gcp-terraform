@@ -1,7 +1,7 @@
 
 variable "platform_environment" {
   type = string
-  description = "The ARO cluster environment"
+  description = "The OCP cluster environment"
   default = "dev"
 }
 
@@ -200,7 +200,7 @@ variable "git_token_secret_project" {
 
 variable "cluster_name" {
   type        = string
-  description = "The name of the ARO cluster to create"
+  description = "The name of the OCP cluster to create"
   default = "osd-classic-001"
 }
 

@@ -1,28 +1,25 @@
-variable "azure_cloud_environment" {
-  type = string
-  description = "The Azure Cloud Environment. Options: environment=public|usgovernment|china|german"
-  validation {
-    condition = contains(["environment", "public", "usgovernment", "usgovernmentl4", "usgovernmentl5", "china", "german"], var.azure_cloud_environment)
-    error_message = "Expected values are one of: environment, public, usgovernment, usgovernmentl4, usgovernmentl5, china, german"
-  }
-}
-
 variable "platform_environment" {
   type = string
-  description = "The ROSA cluster environment"
+  description = "The OCP cluster environment"
   default = "dev"
 }
 
-variable "location" {
+variable "region" {
   type    = string
-  default = "eastus"
-  description = "The location where the ARO cluster is created"
+  default = "us-south1"
+  description = "The region where the OSD cluster is created"
 }
 
-variable "organization" {
+variable "default_zone" {
   type        = string
-  description = "The region where the ROSA cluster is created"
-  default = "sales"
+  default = "us-south1-a"
+  description = "The GCP zone"
+}
+
+variable "department" {
+  type        = string
+  description = "The Organization folder. This could be seen as a department/business_unit"
+  default = "changeme"
 }
 
 variable "cost_center" {
@@ -33,8 +30,8 @@ variable "cost_center" {
 
 variable "cluster_name" {
   type        = string
-  description = "The name of the ROSA cluster to create"
-  default = "rosa-sts-001"
+  description = "The name of the OCP cluster to create"
+  default = "osd-classic-001"
 }
 
 variable "default_tags" {
@@ -42,26 +39,13 @@ variable "default_tags" {
   type        = map(string)
   default = {
     "AutomationTool" = "Terraform"
-    "Contact"        = "opensource@example.com"
   }
-  description = "Additional Azure resource tags"
+  description = "Default Azure resource tags. Should be set at the admin level."
 }
 
 variable "private_cluster" {
   type = bool
   description = "Make the ARO cluster public (internet access) or private"
-}
-
-variable "key_vault_name" {
-  type = string
-  description = "The name of the Azure KV instance hosting OpenShift secrets"
-  default = "derived"
-}
-
-variable "key_vault_resource_group" {
-  type = string
-  description = "The RG of the Azure KV instance hosting OpenShift secrets"
-  default = "derived"
 }
 
 variable "default_kubeconfig_filename" {
@@ -74,16 +58,10 @@ variable "managed_cluster_kubeconfig_filename" {
   default = "~/.managed_cluster_kube/config"
 }
 
-variable "cluster_details_vault_secret_name" {
+variable "cluster_details_secret_name" {
   type = string
   default = "openshift-OCP_ENV-CLUSTER_NAME-cluster-details"
   description = "The name of the secret that will hold the cluster admin details"
-}
-
-variable "key_vault_id" {
-  type = string
-  description = "The Azure KeyVault ID"
-  default = "looked-up"
 }
 
 variable "custom_dns_domain_prefix" {
@@ -92,10 +70,10 @@ variable "custom_dns_domain_prefix" {
   default = "luqman"
 }
 
-variable "cluster_resource_group" {
+variable "cluster_project" {
   type        = string
-  description = "The resource in which to create the cluster"
-  default = "aro-classic-001"
+  description = "The Cluster GCP project in which to create the cluster"
+  default = "gcp-classic-001"
 }
 
 variable "dns_ttl" {
@@ -110,10 +88,16 @@ variable "custom_dns_domain_name" {
   default = "aro-classic1.dev.estus.rnd.openshift.sama-wat.com"
 }
 
-variable "base_dns_zone_resource_group" {
+variable "base_dns_zone_project" {
   type = string
-  description = "The resource group of the base DNS zone name; the parent DNS zone name."
-  default = "aro-classic-101"
+  description = "The project of the base DNS zone name; the parent DNS zone name."
+  default = ""
+}
+
+variable "use_auto_generated_domain" {
+  type = bool
+  default = true
+  description = "Do you want to provide your own domain? true or false"
 }
 
 variable "cert_issuer_email" {
@@ -147,7 +131,7 @@ variable "dns_tls_certificates_subject" {
     country = "United States"
     locality = "Raleigh"
     organizationalUnit = "Research & Development (RND)"
-    organization = "SAMA-WAT LLC"
+    organization = "Example Inc"
     province = "North Carolina"
     postalCode = "27601"
     streetAddresse = "100 East Davie Street"
