@@ -1,0 +1,19 @@
+{{ range $tenant := .Values.tenants }}
+---
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: "{{ $tenant.name }}-telemetry"
+  namespace: {{ $tenant.namespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "34"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "34"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  tracing:
+  - providers:
+    - name: "{{ $tenant.name }}-otel-collector" # Name of OpenTelemetryCollector CR
+    randomSamplingPercentage: 100
+{{ end }}

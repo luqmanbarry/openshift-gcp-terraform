@@ -1,0 +1,44 @@
+allowHostDirVolumePlugin: false
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: false
+allowedCapabilities: null
+apiVersion: security.openshift.io/v1
+defaultAddCapabilities: null
+fsGroup:
+  type: MustRunAs
+kind: SecurityContextConstraints
+metadata:
+  name: restricted-adjusted-compliance
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "3"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "3"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+priority: 999
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+- KILL
+- SETUID
+- SETGID
+- MKNOD
+runAsUser:
+  type: MustRunAsRange
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+users:
+- system:serviceaccount:openshift-compliance:api-resource-collector 
+- system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller" 
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- persistentVolumeClaim
+- projected
+- secret

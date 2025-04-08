@@ -1,0 +1,39 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tag-volume-snapshot-class-hook
+  namespace: openshift-gitops
+  annotations:
+    managed-by: argocd.argoproj.io
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+    "helm.sh/hook": "pre-install"
+    "helm.sh/hook-delete-policy": "hook-succeeded"
+    "helm.sh/hook-weight": "0"
+spec:
+  backoffLimit: 0
+  parallelism: 1
+  completions: 1
+  template:
+    spec:
+      serviceAccountName: openshift-gitops-argocd-application-controller
+      serviceAccount: openshift-gitops-argocd-application-controller
+      restartPolicy: OnFailure
+      containers:
+        - name: tag-volume-snapshot-class-hook
+          image: registry.redhat.io/openshift4/ose-tools-rhel9
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: "RuntimeDefault"
+            capabilities:
+              drop: [ALL]
+          command:
+          - /bin/sh
+          - -c
+          - |
+              set -e
+              oc label --overwrite VolumeSnapshotClass {{ .Values.storage.volumeSnapshotClassName }} "velero.io/csi-volumesnapshot-class=true"
+              oc annotate --overwrite VolumeSnapshotClass {{ .Values.storage.volumeSnapshotClassName }} "snapshot.storage.kubernetes.io/is-default-class=true"
+              
+      restartPolicy: Never

@@ -1,0 +1,15 @@
+apiVersion: imageregistry.operator.openshift.io/v1
+kind: Config
+metadata:
+  name: cluster
+  annotations:
+    # argocd.argoproj.io/sync-wave: "0"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "0"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  defaultRoute: {{ .Values.defaultRoute }}
+  disableRedirect: {{ .Values.disableRedirect }}
+  logLevel: Normal
+  operatorLogLevel: Normal
+  replicas: 3

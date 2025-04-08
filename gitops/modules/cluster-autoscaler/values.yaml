@@ -1,0 +1,29 @@
+enableAutoScale: false
+
+cluster: # Source: https://docs.openshift.com/container-platform/4.12/machine_management/applying-autoscaling.html
+  maxNodesCount: 60 # max number of nodes including control plane ones.
+  cpu:
+    min: 8
+    max: 400 # cpu.max = maxNodesCount * cpu.min
+  memory:
+    min: 16
+    max: 800 # memory.max = maxNodesCount * memory.min
+  delayAfterAdd: 10m 
+  delayAfterDelete: 5m 
+  delayAfterFailure: 30s 
+  unneededTime: 5m 
+  utilizationThreshold: "0.3" # Delete node if utilization is at/below 30%.
+  gpus:
+    enable: false
+    devices:
+    - type: "nvidia.com/gpu"
+      min: 0
+      max: 16
+    - type: "amd.com/gpu"
+      min: 0
+      max: 4
+
+machineSets: # List of MachineSets you want to target for cluster-autoscaling
+  - name: worker-us-east-1a # Always change per cluster - oc get machinesets --all-namespaces
+    minReplicas: 1 
+    maxReplicas: 18 # maxReplicas = (maxNodesCount - controlPlaneNodesCount) / azPerRegion

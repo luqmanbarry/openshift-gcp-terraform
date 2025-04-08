@@ -1,0 +1,21 @@
+kind: ScanSettingBinding
+apiVersion: compliance.openshift.io/v1alpha1
+metadata:
+  name: {{ .Values.resourceCommonName }}
+  namespace: openshift-compliance
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "5"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "5"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+profiles:
+  {{ range $profileItem := .Values.scanProfiles }}
+  - apiGroup: compliance.openshift.io/v1alpha1
+    kind: Profile
+    name: {{ $profileItem }}
+  {{ end }}
+settingsRef:
+  apiGroup: compliance.openshift.io/v1alpha1
+  kind: ScanSetting
+  name: {{ .Values.resourceCommonName }}

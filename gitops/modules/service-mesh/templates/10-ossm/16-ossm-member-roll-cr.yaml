@@ -1,0 +1,18 @@
+{{ range $tenant := .Values.tenants }}
+---
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+  namespace: "{{ $tenant.smcp.namespace }}"
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "16"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "16"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  members:
+    # a list of projects to join the service mesh
+    {{ toYaml $tenant.smcp.rollMembers | nindent 4 }}
+{{ end }}

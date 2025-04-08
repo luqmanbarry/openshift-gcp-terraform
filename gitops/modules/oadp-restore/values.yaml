@@ -1,0 +1,12 @@
+clusterName: changeme
+namespace: openshift-adp
+
+storageClassMapping:
+  sc1: managed-csi
+  sc2: managed-csi
+  sc3: managed-csi
+
+enable: false
+backups: # List backups to restore from
+  - backup-xxxxxx
+  - backup-xyxyxy

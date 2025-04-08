@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "30"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "30"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+  name: {{ .Values.operators.otel.namespace }}

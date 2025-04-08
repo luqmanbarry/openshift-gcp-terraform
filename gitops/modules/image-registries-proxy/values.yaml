@@ -1,0 +1,9 @@
+clusterName: "changeme"
+imageMirrorsConfig:
+  - sourceReference: registry.access.redhat.com/ubi9/ubi-minimal
+    localReferences:
+      - nexus.corporate.com/group/ubi-minimal
+  - sourceReference: registry.redhat.io/openshift4
+    localReferences:
+      - mirror.example.com/redhat
+      - mirror.example.io/redhat

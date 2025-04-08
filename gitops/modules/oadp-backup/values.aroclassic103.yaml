@@ -1,0 +1,18 @@
+clusterName: aroclassic103
+
+enabled: true
+defaultVolumesToFsBackup: true # Whether or not use snapshots ofr FileSystem Backup for Volumes
+
+projects: # List projects/namespaces to backup
+  - namespace: warehouse
+    paused: false
+    cronSchedule: "*/15 * * * *" # Every day at midnight - update accordingly for other TZ
+    backupRetentionPeriod: 360h # 15 days
+  - namespace: point-of-sale
+    paused: false
+    cronSchedule: "*/15 * * * *" # Every day at midnight - update accordingly for other TZ
+    backupRetentionPeriod: 360h # 15 days
+  - namespace: shipping
+    paused: false
+    cronSchedule: "*/15 * * * *" # Every day at midnight - update accordingly for other TZ
+    backupRetentionPeriod: 360h # 15 days

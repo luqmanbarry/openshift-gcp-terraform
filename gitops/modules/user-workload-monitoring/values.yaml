@@ -1,0 +1,28 @@
+enableUserWorkload: true
+# Cluster Metrics
+prometheusK8s:
+  retention: 15d
+  retentionSize: 90Gi
+  storageClassName: managed-csi
+  volumeMode: Filesystem
+  storageCapacity: 100Gi
+# User Workloads Metrics
+prometheus:
+  retention: 15d
+  retentionSize: 90Gi
+  storageClassName: managed-csi
+  volumeMode: Filesystem
+  storageCapacity: 100Gi
+alertmanagerMain:
+  retention: 15d
+  retentionSize: 40Gi
+  storageClassName: managed-csi
+  volumeMode: Filesystem
+  storageCapacity: 50Gi
+thanosRuler:
+  retention: 15d
+  retentionSize: 40Gi
+  storageClassName: managed-csi
+  volumeMode: Filesystem
+  storageCapacity: 50Gi
+

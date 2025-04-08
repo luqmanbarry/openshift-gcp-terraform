@@ -1,0 +1,138 @@
+{{ range $tenant := .Values.tenants }}
+---
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: "{{ $tenant.name }}"
+  namespace: "{{ $tenant.smcp.namespace }}"
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "98"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "98"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  version: "{{ $tenant.smcp.version }}"
+  security:
+    controlPlane:
+      mtls: {{ $tenant.smcp.mutualTLS.enabled }}
+  telemetry:
+    type: Istiod
+  tracing:
+    sampling: 10000
+    type: None
+  general:
+    logging:
+      logAsJSON: true
+      componentLevels:
+        default: info
+  profiles:
+    - default
+  proxy:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+    accessLogging:
+      file:
+        name: /dev/stdout
+    networking:
+      trafficControl:
+        inbound: {}
+        outbound:
+          policy: REGISTRY_ONLY
+  gateways:
+    enabled: {{ $tenant.smcp.gateways.enabled }}
+    egress:
+      enabled: {{ $tenant.smcp.gateways.egress.enabled }}
+      runtime:
+        deployment:
+          autoScaling:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+        pod: {}
+      service: {}
+    ingress:
+      enabled: {{ $tenant.smcp.gateways.ingress.enabled }}
+      runtime:
+        deployment:
+          autoScaling:
+            enabled: true
+            maxReplicas: 2
+            minReplicas: 1
+        pod: {}
+      service: {}
+    openshiftRoute:
+      enabled: {{ $tenant.smcp.gateways.openshiftRoute.enabled }}
+  policy:
+    type: Istiod
+  addons:
+    grafana:
+      enabled: {{ $tenant.smcp.grafana.enabled }}
+      install:
+        config:
+          env: {}
+          envSecrets: {}
+        persistence:
+          storageClassName: ""
+          accessMode: ReadWriteOnce
+          capacity:
+            requests:
+              storage: 10Gi
+          enabled: true
+        service:
+          metadata:
+            annotations:
+              service.alpha.openshift.io/serving-cert-secret-name: grafana-tls
+          ingress:
+            contextPath: /grafana
+            tls:
+              termination: reencrypt
+    jaeger:
+      install:
+        enabled: {{ $tenant.smcp.jaeger.enabled }}
+    kiali:
+      enabled: {{ $tenant.smcp.kiali.enabled }}
+      name: kiali
+      install:
+        dashboard:
+          viewOnly: false
+        deployment:
+          resources:
+            limits:
+              cpu: 500m
+              memory: 2Gi
+        service:
+          ingress:
+            enabled: true
+    prometheus:
+      enabled: {{ $tenant.smcp.prometheus.enabled }}
+      metricsExpiryDuration: "720h"
+      scrape: true
+      install:
+        service:
+          metadata:
+            annotations:
+              service.alpha.openshift.io/serving-cert-secret-name: prometheus-tls
+          ingress:
+            enabled: true
+  runtime:
+    components:
+      pilot:
+        deployment:
+          replicas: 2
+        pod:
+          affinity: {}
+        container:
+          resources:
+          limits: {}
+          requirements: {}
+      grafana:
+        deployment: {}
+        pod: {}
+      kiali:
+        deployment: {}
+        pod: {}
+  
+{{ end }}

@@ -1,0 +1,21 @@
+clusterName: changeme
+keyVaultName: changeme
+namespace: openshift-adp
+subscriptionChannel: stable-1.4
+
+veleroSecretKeyFile: cloud
+
+defaultVolumesToFsBackup: true # Whether or not use snapshots ofr FileSystem Backup for Volumes
+
+storage:
+  provider: azure
+  resourceGroup: stig0015-dev-tfstate
+  storageAccount: stig0014devtfstate
+  storageAccountBlobURI: "https://stig0014devtfstate.blob.core.windows.net"
+  volumeSnapshotClassName: csi-azuredisk-vsc
+  storageContainer: oadp
+  subscriptionId: 47fb2f13-480c-4657-a103-f3779bc3f63f
+  tenantID: 64dc69e4-d083-49fc-9569-ebece1dd1408
+  clientID: 1641416b-51c5-4aee-9a62-cdcaf386680d
+  clientSecretKVSecretName: oadp-sp-client-secret
+  azureCloudName: AzurePublicCloud #AzureUSGovernmentCloud, AzureChinaCloud  

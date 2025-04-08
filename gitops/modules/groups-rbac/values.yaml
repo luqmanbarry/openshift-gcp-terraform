@@ -1,0 +1,4 @@
+rbac:
+  assignments:
+    - ocpRole: "cluster-admin" # Default Roles: https://docs.openshift.com/container-platform/4.15/post_installation_configuration/preparing-for-users.html#default-roles_post-install-preparing-for-users
+      groupName: "my-group"

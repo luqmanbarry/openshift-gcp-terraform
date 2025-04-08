@@ -1,0 +1,6 @@
+# Self Provisioner Config
+Disabled by default, set the `enable: true` to allow users to create new projects.
+
+# Inputs:
+- enable: false # Set flag to true to enable the self-provisioner role.
+- clusterAdminEmail: cluster-admin@example.com # Set the email of the cluster administrator.

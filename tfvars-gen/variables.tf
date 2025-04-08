@@ -144,7 +144,7 @@ variable "tfstate_project" {
 
 variable "cluster_project" {
   type        = string
-  description = "The Cluster GCP project in which to create the cluster"
+  description = "The GCP project in which to create the cluster"
   default = "gcp-classic-001"
 }
 

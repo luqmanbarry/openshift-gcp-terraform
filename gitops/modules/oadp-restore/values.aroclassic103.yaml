@@ -1,0 +1,12 @@
+clusterName: aroclassic103
+
+storageClassMapping:
+  managed-premium: managed-csi
+  managed-premium-retain: managed-csi
+  default: managed-csi
+
+enable: true
+backups: # List backups to restore from
+  - warehouse-20241114160002
+  - shipping-20241114160002
+  - point-of-sale-20241114160002

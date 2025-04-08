@@ -1,0 +1,112 @@
+clusterName: changeme
+keyVaultName: stig0015-dev-vault
+# Operator configuration
+operators:
+  servicemesh:
+    name: servicemeshoperator
+    namespace: service-mesh-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: automatic
+    config:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      nodeSelector: {}
+      tolerations: {}
+  kiali:
+    name: kiali-ossm
+    namespace: kiali-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: automatic
+    config:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      nodeSelector: {}
+      tolerations: {}
+  otel:
+    name: opentelemetry-product
+    namespace: otel-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: automatic
+    config:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      nodeSelector: {}
+      tolerations: {}
+  tempo:
+    name: tempo-product
+    namespace: tempo-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: automatic
+    config:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      nodeSelector: {}
+      tolerations: {}
+    azureBlob:
+      cloudName: AzurePublicCloud
+      storageKVSecretName: ossm-tempostack-traces # Put storage account access key in this KV secret
+      accountName: stig0015devtfstate
+      containerName: ossm-tempostack-traces
+
+# List of tenant namespaces and their SMCP configurations
+tenants:
+  - name: tenant1
+    smcp:
+      namespace: tenant1-mesh
+      version: v2.6
+      gateways:
+        enabled: true
+        ingress:
+          enabled: true
+        egress:
+          enabled: true
+        openshiftRoute:
+          enabled: false
+      jaeger:
+        enabled: true
+      kiali:
+        enabled: true
+      prometheus:
+        enabled: true
+      grafana:
+        enabled: true
+      mutualTLS:
+        enabled: true
+      rollMembers:
+        - warehouse
+        - point-of-sale
+        - shipping
+      rbac:
+        - roleKind: Role
+          roleName: istio-admin # OSSM defined role
+          subjectKind: Group
+          subjectName: tenant1-leads
+        - roleKind: Role
+          roleName: istio-admin # OSSM defined role
+          subjectKind: User
+          subjectName: luqmanbarry
+        - roleKind: Role
+          roleName: mesh-user # OSSM defined role (basic permissions)
+          subjectKind: User
+          subjectName: lbarry
+        - roleKind: ClusterRole
+          roleName: edit # OCP defined role (basic permissions)
+          subjectKind: ServiceAccount
+          subjectName: jenkins
+          subjectNamespace: jenkins

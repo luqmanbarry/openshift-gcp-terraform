@@ -1,0 +1,26 @@
+{{ range $tenant := .Values.tenants }}
+{{ range $tenantRbac := $tenant.rbac }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: "{{ $tenant.name | lower }}-{{ $tenantRbac.subjectKind | lower }}-{{ $tenantRbac.subjectName | lower  }}"
+  namespace: "{{ $tenant.smcp.namespace | lower }}"
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "13"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "13"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: {{ $tenantRbac.roleKind }}
+  name: {{ $tenantRbac.roleName }}
+subjects:
+- kind: {{ $tenantRbac.subjectKind }}
+  name: {{ $tenantRbac.subjectName }}
+  {{ if hasKey $tenantRbac "subjectNamespace" }}
+  namespace: {{ $tenantRbac.subjectNamespace }}
+  {{ end  }}
+{{ end }}
+{{ end }}

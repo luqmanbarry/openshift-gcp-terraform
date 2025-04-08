@@ -1,0 +1,8 @@
+rbac:
+  assignments:
+    - ocpRole: "cluster-admin"
+      groupName: "a6f094bb-8729-47a2-a36b-c6220a20ce61" # "lbarry-aro-admins"
+    - ocpRole: "admin"
+      groupName: "a6f094bb-8729-47a2-a36b-c6220a20ce61" # "lbarry-aro-admins"
+    - ocpRole: "edit"
+      groupName: "a6f094bb-8729-47a2-a36b-c6220a20ce61" # "lbarry-aro-admins"
