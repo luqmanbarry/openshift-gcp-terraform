@@ -96,7 +96,7 @@ proxy           = {
 
 #================= GIT MGMT OF TFVARS ================================================
 git_base_url            = "https://github.com/"
-git_repository_url      = "https://github.com/luqmanbarry/aro-classic-terraform.git"
+git_repository_url      = "https://github.com/luqmanbarry/osd-classic-gcp-terraform.git"
 git_org                 = "luqmanbarry"
 git_username            = "git"
 git_repository_name     = "osd-classic-gcp-terraform"
