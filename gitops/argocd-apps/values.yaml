@@ -1,4 +1,4 @@
-resourceNamePrefix: 'aro-day2-gitops'
+resourceNamePrefix: 'osd-gcp-day2-gitops'
 clusterName: 'changeme' # REQUIRED
 git:
   repoURL: 'https://github.com/luqmanbarry/osd-classic-gcp-terraform.git' # REQUIRED

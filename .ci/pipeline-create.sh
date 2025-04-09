@@ -174,11 +174,11 @@ cd ${WORKING_DIRECTORY}
 if [ "$TF_VAR_use_auto_generated_domain" = "false" ];
 then
   echo "#########################################################################################################"
-  TF_MODULE="dns-tls-certs"
+  TF_MODULE="kube-config"
   BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
   BACKEND_PATH="${TF_MODULE}"
-  TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_organization}/${TF_VAR_subscription_id}/${TF_VAR_cluster_name}.tfvars"
-  echo "=================================================="
+  TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_department}/${TF_VAR_cluster_name}.tfvars"
+echo "=================================================="
   echo "===========> Module - $TF_MODULE "
   echo "=================================================="
   cd "${TF_MODULE}"
@@ -193,10 +193,10 @@ then
 fi
 
 echo "#########################################################################################################"
-TF_MODULE="bootstrap"
+TF_MODULE="bootstrap" # Day2 Configs
 BACKEND_KEY="${TF_VAR_platform_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
 BACKEND_PATH="${TF_MODULE}"
-TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_organization}/${TF_VAR_subscription_id}/${TF_VAR_cluster_name}.tfvars"
+TFVARS_FILE="${WORKING_DIRECTORY}/tfvars/computed/${TF_VAR_department}/${TF_VAR_cluster_name}.tfvars"
 echo "=================================================="
 echo "===========> Module - $TF_MODULE "
 echo "=================================================="

@@ -1,6 +1,6 @@
 clusterName: "changeme"
 skipArgoCDSync: true
-resourceNamePrefix: 'aro-day2-gitops'
+resourceNamePrefix: 'osd-gcp-day2-gitops'
 # Add more groups and roles for RBAC configuration
 rbac:
   policies: []
@@ -10,8 +10,8 @@ rbac:
 
 git:
   repository:
-    name: aro-gitops
-    repoURL: 'https://github.com/luqmanbarry/aro-classic-terraform.git' # Don't leave out the .git for the url
+    name: osd-gcp-gitops
+    repoURL: 'https://github.com/luqmanbarry/osd-classic-gcp-terraform.git' # Don't leave out the .git for the url
     targetRevision: main
     username: git
     password: 'changeme'
