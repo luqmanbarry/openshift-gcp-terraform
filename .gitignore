@@ -42,3 +42,5 @@ override.tf.json
 
 **/cluster-build.log
 **/cluster-build.txt
+**/cluster-details.json
+**/cluster-acmhub.json
