@@ -1,5 +1,5 @@
-keyVaultName: stig0015-dev-vault
-clusterName: aroclassic103
+secretName: stig0015-dev-vault
+clusterName: aroclassic102
 hecSecretName: splunk-logging-hec-token
 splunk:
   endpoint: http://your.splunk.hec.url:8088/services/collector

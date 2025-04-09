@@ -1,8 +1,0 @@
-clusterName: "aroclassic103"
-keyVaultName: "stig0015-dev-vault"
-provider:
-  azurekv: # Key Vault ServicePrincipal credentials
-    clientID: 8e535b4b-26ce-44ce-9e76-0fbc128593c7
-    tenantID: 64dc69e4-d083-49fc-9569-ebece1dd1408
-    vaultURL: https://stig0015-dev-vault.vault.azure.net/
-    

@@ -1,4 +1,4 @@
-keyVaultName: changeme
+secretName: changeme
 clusterName: changeme
 hecKeyVaultSecretName: splunk-logging-hec-token
 splunk:
