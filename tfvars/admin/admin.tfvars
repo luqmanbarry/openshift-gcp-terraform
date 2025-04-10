@@ -45,6 +45,15 @@ enable_gcp_project_api_list   = [
   "cloudapis.googleapis.com",
   "networksecurity.googleapis.com"
 ]
+
+k8s_day2_gitops_gcp_sa_rbac_configs = [
+  {
+    gcp_role           = "roles/secretmanager.secretAccessor"
+    k8s_service_account = "day2-gitops"
+    k8s_namespace       = "tf-resources"
+  }
+]
+tf_resources_namespace = "ocp-tf-resources"
 #================ OCP CLUSTER =========================================================
 dns_ttl                       = 300
 tls_certificates_ttl_seconds  = "15638400s"

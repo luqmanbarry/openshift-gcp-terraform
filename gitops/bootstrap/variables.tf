@@ -73,3 +73,36 @@ variable "git_branch" {
   description = "The base branch" 
   default = "main" 
 }
+
+variable "git_token_secret_name" {
+  type = string
+  default = "git-github-pat"
+}
+
+variable "git_token_secret_project" {
+  type = string
+  description = "The project where the Git PAT secret is located."
+  default = "changeme"
+}
+
+variable "tf_resources_namespace" {
+  type = string
+  description = "Namespace on OCP where TF will create resources used by cluster components"
+  default = "ocp-tf-resources"
+}
+
+variable "k8s_day2_gitops_gcp_sa_rbac_configs" {
+  type = list({
+    gcp_role = string
+    k8s_service_account = string
+    k8s_namespace       = string
+  })
+  description = "Set of parameters describing K8S service account that need access to GCP services"
+  default = [
+    {
+      gcp_role           = "roles/secretmanager.secretAccessor"
+      k8s_service_account = "day2-gitops"
+      k8s_namespace       = "tf-resources"
+    }
+  ]
+}
