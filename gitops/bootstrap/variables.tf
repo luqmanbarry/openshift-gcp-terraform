@@ -92,17 +92,23 @@ variable "tf_resources_namespace" {
 }
 
 variable "k8s_day2_gitops_gcp_sa_rbac_configs" {
-  type = list({
+  type = list(object({
     gcp_role = string
     k8s_service_account = string
     k8s_namespace       = string
-  })
+  }))
   description = "Set of parameters describing K8S service account that need access to GCP services"
   default = [
     {
-      gcp_role           = "roles/secretmanager.secretAccessor"
+      gcp_role            = "roles/secretmanager.secretAccessor"
       k8s_service_account = "day2-gitops"
       k8s_namespace       = "tf-resources"
     }
   ]
+}
+
+variable "cluster_details_secret_name" {
+  type = string
+  default = "openshift-OCP_ENV-CLUSTER_NAME-cluster-details"
+  description = "The name of the secret that will hold the cluster authN details"
 }

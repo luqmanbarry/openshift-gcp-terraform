@@ -13,7 +13,7 @@ terraform {
 }
 
 provider "kubectl" {
-  apply_retry_count  = 10
+  apply_retry_count  = 3
   config_path        = var.managed_cluster_kubeconfig_filename
   insecure           = true
 }

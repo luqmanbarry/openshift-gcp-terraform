@@ -1,3 +1,8 @@
+data "google_secret_manager_secret_version" "cluster_details" {
+  secret  = var.cluster_details_secret_name
+  project = var.cluster_project
+}
+
 ## Create namespace
 resource "kubectl_manifest" "create_tf_namespace" {
   # provider    = kubernetes.managed_cluster
@@ -10,7 +15,6 @@ resource "kubectl_manifest" "create_tf_namespace" {
         "openshift.io/display-name":  "TF managed cluster resources"
       labels:
         "openshift.io/cluster-monitoring": "true"
-        ${yamlencode(local.resource_tags)}
   YAML
   # force_conflicts = true
   # wait = true
@@ -23,42 +27,81 @@ resource "kubectl_manifest" "secret_manager_access_sa" {
     apiVersion: v1
     kind: ServiceAccount
     metadata:
-      name: "${var.cluster_name}"
+      name: "${local.ocp_day2_service_account}"
       namespace: "${var.tf_resources_namespace}"
-      labels:
+      annotations:
         "openshift.io/role-desc":  "SA for accessing GCP SecretManager"
-        ${yamlencode(local.resource_tags)}
   YAML
   # force_conflicts = true
   # wait = true
 }
 
+data "google_project" "cluster_project" {
+  project_id = var.cluster_project
+}
+
+# Create WIF Pool
+resource "google_iam_workload_identity_pool" "day2_gitops" {
+  workload_identity_pool_id = local.wif_config_name
+  display_name              = local.wif_config_name
+  description               = format("WIF Pool for the %s OpenShift cluster Day2 GitOps ServiceAccount", var.cluster_name)
+}
+
+resource "google_iam_workload_identity_pool_provider" "day2_gitops" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.day2_gitops.workload_identity_pool_id
+  workload_identity_pool_provider_id = local.wif_config_name
+  display_name                       = local.wif_config_name
+  description                        = format("WIF Provider for the %s OpenShift cluster Day2 GitOps GCP Service Account", var.cluster_name)
+
+  attribute_mapping = {
+    # "google.subject"                = "system:serviceaccount:${var.tf_resources_namespace}:${local.ocp_day2_service_account}"
+    "google.subject"                      = "assertion.sub"
+    "attribute.aud"                       = "assertion.aud"
+    "attribute.kubernetes_namespace"      = "assertion.namespace"
+    "attribute.kubernetes_serviceaccount" = "assertion.serviceaccount"
+  }
+
+  # OIDC configuration for OpenShift
+  oidc {
+    issuer_uri        = "https://${local.cluster_details.api_server_url}"
+    allowed_audiences = [ 
+      "openshift", 
+      "kubernetes", 
+      "day2-gitops", 
+      "openshift-workloads", 
+      format("%s", local.ocp_day2_service_account),
+      format("%s", var.tf_resources_namespace)
+    ]
+  }
+}
+
 ## Create GCP ServiceAccount
 resource "google_service_account" "day2_gitops_sa" {
-  account_id   = format("%s-day2-gitops", var.cluster_name)
-  display_name = format("%s-day2-gitops", var.cluster_name)
+  account_id   = local.ocp_day2_service_account
+  display_name = local.ocp_day2_service_account
   description  = "Service Account used by Day2 GitOps modules to access GCP services"
 }
 resource "google_service_account_iam_member" "day2_gitops_k8s_sa_binding_wif" {
-  count               = length(var.k8s_day2_gitops_gcp_sa_rbac_configs)
-  service_account_id  = data.google_service_account.day2_gitops_sa.name
+  count               = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)
+  service_account_id  = google_service_account.day2_gitops_sa.name
   role                = "roles/iam.workloadIdentityUser"
-  member              = "serviceAccount:${data.google_project.cluster_project.project_id}.svc.id.goog[${var.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/${var.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}]"
+  # member              = "serviceAccount:${google_iam_workload_identity_pool.day2_gitops.workload_identity_pool_id}[${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}]"
+  member              = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.day2_gitops.name}/attribute.kubernetes_namespace/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/attribute.k8s_serviceaccount/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}"
 }
 resource "google_project_iam_member" "day2_gitops_sa_bindings" {
-  count       = length(var.k8s_day2_gitops_gcp_sa_rbac_configs)
+  count       = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)
   project     = data.google_project.cluster_project.project_id
-  role        = var.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].gcp_role
+  role        = local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].gcp_role
   member      = "serviceAccount:${google_service_account.day2_gitops_sa.email}"
 }
 
-## Assign roles to the K8S service account
+# Assign roles to the K8S service account
 resource "google_project_iam_member" "day2_gitops_role_assignments" {
-  count        = length(var.k8s_day2_gitops_gcp_sa_rbac_configs)
+  count        = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)
   project      = var.cluster_project
-  role         = var.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].gcp_role
-
-  member       = "principal://iam.googleapis.com/projects/${data.google_project.cluster_project.number}/locations/global/workloadIdentityPools/${data.google_project.cluster_project.project_id}.svc.id.goog/subject/ns/${var.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/sa/${var.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}"
+  role         = local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].gcp_role
+  # member       = "principal://iam.googleapis.com/projects/${data.google_project.cluster_project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.day2_gitops.id}.svc.id.goog/subject/ns/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/sa/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}"
+  member       = "principalSet://iam.googleapis.com/projects/${data.google_project.cluster_project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.day2_gitops.workload_identity_pool_id}/attribute.kubernetes_namespace/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/attribute.k8s_serviceaccount/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}"
 }
 
 ## Get the git PAT secret
@@ -68,6 +111,13 @@ data "google_secret_manager_secret_version" "git_pat_secret" {
 }
 
 resource "null_resource" "deploy_openshift_gitops" {
+
+  depends_on = [ 
+    # google_project_iam_member.day2_gitops_role_assignments,
+    google_project_iam_member.day2_gitops_sa_bindings,
+    google_service_account_iam_member.day2_gitops_k8s_sa_binding_wif,
+    google_iam_workload_identity_pool_provider.day2_gitops
+  ]
 
   provisioner "local-exec" {
     interpreter = [ "/bin/bash", "-c" ]

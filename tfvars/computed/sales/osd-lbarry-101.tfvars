@@ -47,6 +47,7 @@ enable_gcp_project_api_list   = [
   "cloudapis.googleapis.com",
   "networksecurity.googleapis.com"
 ]
+
 #================ OCP CLUSTER =========================================================
 dns_ttl                       = 300
 tls_certificates_ttl_seconds  = "15638400s"
@@ -160,7 +161,7 @@ cost_center="570633"
 
 ocp_version="4.18.4"
 
-acmhub_registration_enabled=true
+acmhub_registration_enabled=false
 
 kube_home_dir="/Users/luqman/workspace/guides/osd-classic-gcp-terraform"
 
