@@ -81,6 +81,16 @@ resource "google_service_account" "day2_gitops_sa" {
   display_name = local.ocp_day2_service_account
   description  = "Service Account used by Day2 GitOps modules to access GCP services"
 }
+# note this requires the terraform to be run regularly
+resource "time_rotating" "sa_key_rotation" {
+  rotation_days = 90
+}
+resource "google_service_account_key" "day2_gitops_sa" {
+  service_account_id = google_service_account.day2_gitops_sa.name
+  keepers = {
+    rotation_time = time_rotating.sa_key_rotation.rotation_rfc3339
+  }
+}
 ## Create ServiceAccount Private Key
 resource "kubectl_manifest" "sa_private_key_k8s_secret" {
   # provider    = kubernetes.managed_cluster
