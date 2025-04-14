@@ -36,7 +36,6 @@ resource "kubectl_manifest" "secret_manager_access_sa" {
   # force_conflicts = true
   # wait = true
 }
-
 data "google_project" "cluster_project" {
   project_id = var.cluster_project
 }
@@ -81,6 +80,22 @@ resource "google_service_account" "day2_gitops_sa" {
   account_id   = local.ocp_day2_service_account
   display_name = local.ocp_day2_service_account
   description  = "Service Account used by Day2 GitOps modules to access GCP services"
+}
+## Create ServiceAccount Private Key
+resource "kubectl_manifest" "sa_private_key_k8s_secret" {
+  # provider    = kubernetes.managed_cluster
+  yaml_body = <<-YAML
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: "${local.ocp_day2_service_account}"
+      namespace: "${var.tf_resources_namespace}"
+    type: Opaque
+    data:
+      credentials.json: "${google_service_account_key.day2_gitops_sa.private_key}"
+  YAML
+  # force_conflicts = true
+  # wait = true
 }
 resource "google_service_account_iam_binding" "day2_gitops_k8s_sa_binding_wif" {
   count               = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)

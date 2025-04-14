@@ -32,4 +32,7 @@ locals {
     console_url       = jsondecode(base64decode(data.google_secret_manager_secret_version.cluster_details.secret_data)).console_url
     api_server_url    = jsondecode(base64decode(data.google_secret_manager_secret_version.cluster_details.secret_data)).api_server_url
   }
+
+  scratch_dir                 = "${path.module}/../.scratch_dir"
+  day2_gitops_sa_private_key  = format("%s/day2_gitops_sa_private_key", local.scratch_dir)
 }
