@@ -107,16 +107,16 @@ resource "kubectl_manifest" "sa_private_key_k8s_secret" {
   # force_conflicts = true
   # wait = true
 }
-resource "google_service_account_iam_binding" "day2_gitops_k8s_sa_binding_wif" {
-  count               = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)
-  service_account_id  = google_service_account.day2_gitops_sa.name
-  role                = "roles/iam.workloadIdentityUser"
+# resource "google_service_account_iam_binding" "day2_gitops_k8s_sa_binding_wif" {
+#   count               = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)
+#   service_account_id  = google_service_account.day2_gitops_sa.name
+#   role                = "roles/iam.workloadIdentityUser"
     
-  members              = [ 
-    # "serviceAccount:${google_iam_workload_identity_pool.day2_gitops.workload_identity_pool_id}[${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}]",
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.day2_gitops.name}/attribute.kubernetes_namespace/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/attribute.k8s_serviceaccount/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}"
-  ]
-}
+#   members              = [ 
+#     "serviceAccount:${data.google_project.custer_project.project_id}.svc.id.goog[${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}]"
+#     # "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.day2_gitops.name}/attribute.kubernetes_namespace/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/attribute.k8s_serviceaccount/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}"
+#   ]
+# }
 resource "google_project_iam_member" "day2_gitops_sa_bindings" {
   count       = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)
   project     = data.google_project.cluster_project.project_id
@@ -144,7 +144,7 @@ resource "null_resource" "deploy_openshift_gitops" {
   depends_on = [ 
     # google_project_iam_member.day2_gitops_role_assignments,
     google_project_iam_member.day2_gitops_sa_bindings,
-    google_service_account_iam_binding.day2_gitops_k8s_sa_binding_wif,
+    # google_service_account_iam_binding.day2_gitops_k8s_sa_binding_wif,
     google_iam_workload_identity_pool_provider.day2_gitops
   ]
 
