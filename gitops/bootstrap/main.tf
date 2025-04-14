@@ -31,6 +31,7 @@ resource "kubectl_manifest" "secret_manager_access_sa" {
       namespace: "${var.tf_resources_namespace}"
       annotations:
         "openshift.io/role-desc":  "SA for accessing GCP SecretManager"
+        iam.gke.io/gcp-service-account: "${local.ocp_day2_service_account}@${var.cluster_project}.iam.gserviceaccount.com"
   YAML
   # force_conflicts = true
   # wait = true
@@ -81,12 +82,15 @@ resource "google_service_account" "day2_gitops_sa" {
   display_name = local.ocp_day2_service_account
   description  = "Service Account used by Day2 GitOps modules to access GCP services"
 }
-resource "google_service_account_iam_member" "day2_gitops_k8s_sa_binding_wif" {
+resource "google_service_account_iam_binding" "day2_gitops_k8s_sa_binding_wif" {
   count               = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)
   service_account_id  = google_service_account.day2_gitops_sa.name
   role                = "roles/iam.workloadIdentityUser"
-  # member              = "serviceAccount:${google_iam_workload_identity_pool.day2_gitops.workload_identity_pool_id}[${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}]"
-  member              = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.day2_gitops.name}/attribute.kubernetes_namespace/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/attribute.k8s_serviceaccount/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}"
+    
+  members              = [ 
+    # "serviceAccount:${google_iam_workload_identity_pool.day2_gitops.workload_identity_pool_id}[${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}]",
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.day2_gitops.name}/attribute.kubernetes_namespace/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_namespace}/attribute.k8s_serviceaccount/${local.k8s_day2_gitops_gcp_sa_rbac_configs[count.index].k8s_service_account}"
+  ]
 }
 resource "google_project_iam_member" "day2_gitops_sa_bindings" {
   count       = length(local.k8s_day2_gitops_gcp_sa_rbac_configs)
@@ -115,7 +119,7 @@ resource "null_resource" "deploy_openshift_gitops" {
   depends_on = [ 
     # google_project_iam_member.day2_gitops_role_assignments,
     google_project_iam_member.day2_gitops_sa_bindings,
-    google_service_account_iam_member.day2_gitops_k8s_sa_binding_wif,
+    google_service_account_iam_binding.day2_gitops_k8s_sa_binding_wif,
     google_iam_workload_identity_pool_provider.day2_gitops
   ]
 
