@@ -63,7 +63,7 @@ resource "google_iam_workload_identity_pool_provider" "day2_gitops" {
 
   # OIDC configuration for OpenShift
   oidc {
-    issuer_uri        = "https://${local.cluster_details.api_server_url}"
+    issuer_uri        = "https://openshift.com"
     allowed_audiences = [ 
       "openshift", 
       "kubernetes", 
