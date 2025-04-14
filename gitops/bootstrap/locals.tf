@@ -13,7 +13,18 @@ locals {
     gcp_role           = "roles/secretmanager.secretAccessor"
     k8s_service_account = local.ocp_day2_service_account
     k8s_namespace       = var.tf_resources_namespace
+  },
+  {
+    gcp_role           = "roles/iam.serviceAccountTokenCreator"
+    k8s_service_account = local.ocp_day2_service_account
+    k8s_namespace       = var.tf_resources_namespace
+  },
+  {
+    gcp_role           = "roles/iam.workloadIdentityUser"
+    k8s_service_account = local.ocp_day2_service_account
+    k8s_namespace       = var.tf_resources_namespace
   }
+  
 ]
 
   cluster_details = {
