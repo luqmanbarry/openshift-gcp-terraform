@@ -1,5 +1,6 @@
 namespace: external-secrets-operator
 clusterName: "changeme"
+clusterLocation: "us-south1"
 tf_resources_namespace: "ocp-tf-resources"
 provider: # Using Workload Identity (WIF)
   gcpsm:
