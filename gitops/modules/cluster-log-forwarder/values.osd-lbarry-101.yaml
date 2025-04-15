@@ -1,5 +1,5 @@
-secretName: stig0015-dev-vault
-clusterName: aroclassic102
+clusterName: "osd-lbarry-101"
+clusterSecretStoreName: example-gcp-project
 hecSecretName: splunk-logging-hec-token
 splunk:
   endpoint: http://your.splunk.hec.url:8088/services/collector
