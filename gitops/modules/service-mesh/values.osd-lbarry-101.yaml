@@ -1,5 +1,5 @@
-clusterName: aroclassic102
-keyVaultName: stig0015-dev-vault
+clusterName: "osd-lbarry-101"
+clusterSecretStoreName: example-gcp-project
 
 # List of tenant namespaces and their SMCP configurations
 tenants:

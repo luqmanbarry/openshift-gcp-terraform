@@ -1,6 +1,6 @@
-clusterName: "aroclassic102"
+clusterName: "osd-lbarry-101"
 
-keyVaultName: "stig0015-key-vault"
+clusterSecretStoreName: example-gcp-project
 patchSchedule: "*/5 * * * *"
 
 registriesTrustedCerts: # Provide list of registry and key vault secret name

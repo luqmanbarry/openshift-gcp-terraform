@@ -1,5 +1,5 @@
 clusterName: changeme
-keyVaultName: stig0015-dev-vault
+clusterSecretStoreName: example-gcp-project
 # Operator configuration
 operators:
   servicemesh:

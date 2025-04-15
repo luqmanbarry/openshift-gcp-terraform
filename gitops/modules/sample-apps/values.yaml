@@ -1,6 +1,5 @@
 
 business_unit: sales
-aws_region: us-east-1
 storageClassName: managed-csi
 micro_services:
   - name: warehouse

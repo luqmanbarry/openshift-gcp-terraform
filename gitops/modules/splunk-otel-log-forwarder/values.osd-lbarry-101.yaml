@@ -1,11 +1,11 @@
 
 # Complete var list: https://github.com/signalfx/splunk-otel-collector-chart/blob/main/helm-charts/splunk-otel-collector/values.yaml
-keyVaultName: "stig0015-dev-vault"
-hecKeyVaultSecretName: "splunk-platform-hec-details"
+clusterSecretStoreName: example-gcp-project
+hecSecretName: "splunk-platform-hec-details"
 
 # splunk-otel-collector: # subchart name to override its values.
-clusterName: "aroclassic102" # REQUIRED
-cloudProvider: "azure" # {aws|azure|gke}
+clusterName: "osd-lbarry-101" # REQUIRED
+cloudProvider: "gke" # {aws|azure|gke}
 distribution: "openshift" # {eks, aks, eks/fargate,..}
 
 splunkPlatform:
