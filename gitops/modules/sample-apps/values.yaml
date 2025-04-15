@@ -1,6 +1,6 @@
 
 business_unit: sales
-storageClassName: managed-csi
+storageClassName: standard-csi
 micro_services:
   - name: warehouse
     namespace: warehouse
