@@ -36,8 +36,6 @@
 
 ## Execution Flow
 
-TODO: Update diagram to reflect GCP Arch
-
 ![Cluster Build Stages](.assets/osd-gcp-classic-tf-automation-steps.jpg)
 
 
