@@ -38,7 +38,7 @@
 
 TODO: Update diagram to reflect GCP Arch
 
-![Cluster Build Stages](.assets/aro-classic-automation-steps-v2.jpg)
+![Cluster Build Stages](.assets/osd-gcp-classic-tf-automation-steps.jpg)
 
 
 ## Admin variables
@@ -97,15 +97,9 @@ This step is only required in the absence of a DNS Zone instance. In a productio
 
     This step should be skipped if there is a base DNS Zone already setup. Keep in mind, the base DNS Zone could be a child zone to the root zone.
 
-    ![Azure Base DNS Zone Create](.assets/base-dns-zone-create.png)
-
 2. Record the DNS Zone assigned name servers
 
-    ![Azure Base DNS Zone Details](.assets/base-dns-zone-details.png)
-
 3. Delegate the name servers to your domain registrar
-
-    ![GoDaddy domain delegation](.assets/godaddy-base-dns-zone-transfer.png)
 
 4. Verify root DNS Zone domain is resolvable
 
@@ -144,11 +138,7 @@ Domain patterns:
 
 1. Child DNS Zone details
 
-    ![Cluster child DNS Zone](.assets/cluster-dns-zone-details.png)
-
 2. Register the cluster child DNS Zone to domain registrar
-
-    ![Cluster child DNS Zone transfer](.assets/godaddy-cluster-dns-zone-transfer.png)
 
 3. Verify Cluster (child) DNS Zone domain is resolvable
    
