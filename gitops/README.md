@@ -10,20 +10,21 @@
 - [gitops/bootstrap](./gitops/bootstrap/): Deploys and configure the OpenShift GitOps operator. Configurations such as adding a repository, RBAC, App of apps pattern are configured after the Operator deployment.
 
 - [gitops/modules](./gitops/modules/): Cluster Day2 configuration items are implemented using GitOps patterns. Each configuration item represents a module packaged as a Helm chart.
+
 - [gitops/argocd-apps](./gitops/argocd-apps/): The Helm chart that defines the ArgoCD applications manifests used for the deployment of the Day2 configuration modules; one helm chart per Day2 module.
 
 ## Pre-requisites
-- ARO Cluster
-- Azure KeyVault
-- Azure Storage Account
-- Bastion host with these packages: openshift-client, azure-cli, terraform, helm, jq, python3
+- OCP Cluster
+- GCP Secrets Manager
+- Storage Bucket
+- Bastion host with these packages: openshift-client, gcloud cli, terraform, helm, jq, python3
 
 ## Procedure
 
 1. Deactivate all ArgoCD Application
    - At first deactivate all modules except the openshift-gitops module. Use the `values.<cluster-name>.yaml` file of the [argocd-apps](./argocd-apps/) helm chart.
       ```yaml
-      clusterName: 'aroclassic102'
+      clusterName: 'osd-lbarry-101'
 
       git:
         targetRevision: main
@@ -99,7 +100,7 @@
    Deployment and configuration codes are defined in the [bootstrap](./bootstrap/) sub-directory.
 
    > [!INFO]
-   > We could use Ansible to achieve the same level of automation by swapping the Terraform code by Ansible.
+   > We could use Ansible to achieve the same level of automation by replacing the Terraform code by Ansible.
 
 3. Prepare the [Day2 configuration modules](./modules/) parameters. Use the `values.<cluster-name>.yaml` file for each cluster.
 
@@ -110,7 +111,7 @@
     After having set the ESO inputs in the `values.<cluster-name>.yaml` file, we'll activate it for deployment on the cluster.
 
     ```yaml
-    clusterName: 'aroclassic102'
+    clusterName: 'osd-lbarry-101'
 
     git:
       targetRevision: main
