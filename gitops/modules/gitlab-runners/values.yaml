@@ -19,7 +19,7 @@ persistentVolumeClaim: # This is used to add writable filesystem to the runner p
   mountPath: "/mnt/cicd"
 
 gitlabRunnerTokenKVSecret: "gitlab-runner-registration-token"
-gitlabUrl: https://gitlab.consulting.redhat.com
+gitlabUrl: https://gitlab.corporate.com
 runners:
   - name: openshift-cicd-tools
     concurrent: 10
