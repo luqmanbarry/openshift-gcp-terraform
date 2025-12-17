@@ -38,6 +38,8 @@ override.tf.json
 
 **/.kube
 
+**/.scratch_dir
+
 **/.tmp
 
 **/cluster-build.log
