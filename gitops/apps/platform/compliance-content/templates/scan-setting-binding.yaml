@@ -1,0 +1,17 @@
+{{- $compliance := .Values | default dict }}
+{{- if $compliance.enabled }}
+apiVersion: compliance.openshift.io/v1alpha1
+kind: ScanSettingBinding
+metadata:
+  name: {{ $compliance.scan_setting_binding_name }}
+  namespace: {{ $compliance.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "30"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+profiles:
+{{ toYaml $compliance.profiles | indent 2 }}
+settingsRef:
+  apiGroup: compliance.openshift.io/v1alpha1
+  kind: ScanSetting
+  name: {{ $compliance.scan_settings_ref }}
+{{- end }}

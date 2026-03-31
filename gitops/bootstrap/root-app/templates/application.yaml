@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: '{{ .Values.rootApplication.name }}'
+  namespace: '{{ .Values.rootApplication.namespace }}'
+spec:
+  destination:
+    namespace: '{{ .Values.rootApplication.destinationNamespace }}'
+    server: https://kubernetes.default.svc
+  project: '{{ .Values.rootApplication.project | default "default" }}'
+  source:
+    path: '{{ .Values.rootApplication.path }}'
+    repoURL: '{{ .Values.git.repoURL }}'
+    targetRevision: '{{ .Values.git.targetRevision }}'
+    helm:
+      values: |
+{{ toYaml .Values.bootstrapValues | indent 8 }}
+  syncPolicy:
+    {{- $syncPolicy := default (dict) .Values.syncPolicy }}
+    {{- $automated := true }}
+    {{- if hasKey $syncPolicy "automated" }}
+    {{- $automated = $syncPolicy.automated }}
+    {{- end }}
+    {{- if $automated }}
+    automated:
+      prune: {{ default true $syncPolicy.prune }}
+      selfHeal: {{ default true $syncPolicy.selfHeal }}
+    {{- end }}
+    {{- with (default (list "CreateNamespace=true") $syncPolicy.syncOptions) }}
+    syncOptions:
+{{ toYaml . | indent 6 }}
+    {{- end }}

@@ -1,0 +1,12 @@
+{{- $shared := .Values.sharedTenantArgoCD | default dict }}
+{{- if $shared.enabled }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $shared.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "32"
+  labels:
+    openshift.io/cluster-monitoring: "true"
+{{- end }}

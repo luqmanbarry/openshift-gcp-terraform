@@ -1,0 +1,29 @@
+---
+- name: Run OSD on GCP cluster stack
+  hosts: localhost
+  gather_facts: false
+  vars:
+    repo_root: "{{ playbook_dir }}/../.."
+    cluster_dir: "{{ cluster_dir | default('clusters/dev/gcp-classic-101') }}"
+    terraform_action: "{{ terraform_action | default('plan') }}"
+    artifact_dir: "{{ artifact_dir | default(repo_root ~ '/.artifacts/aap/' ~ (cluster_dir | replace('/', '_')) ~ '/' ~ terraform_action) }}"
+    backend_enabled: "{{ backend_enabled | default(false) }}"
+    backend_config_file: "{{ backend_config_file | default('') }}"
+    allow_apply: "{{ allow_apply | default(false) }}"
+    workflow_cmd: >-
+      bash {{ repo_root }}/scripts/run_cluster_workflow.sh
+      --cluster-dir {{ repo_root }}/{{ cluster_dir }}
+      --artifact-dir {{ artifact_dir }}
+      --mode {{ terraform_action }}
+      --backend {{ 'true' if backend_enabled else 'false' }}
+      {% if backend_config_file | length > 0 -%}
+      --backend-config-file {{ backend_config_file }}
+      {%- endif %}
+  tasks:
+    - name: Run Terraform stack helper
+      ansible.builtin.command:
+        cmd: "{{ workflow_cmd }}"
+      environment:
+        TF_IN_AUTOMATION: "1"
+        OCP_GCP_FACTORY_ALLOW_APPLY: "{{ 'true' if allow_apply else 'false' }}"
+      changed_when: "{{ terraform_action != 'validate' }}"

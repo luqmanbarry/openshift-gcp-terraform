@@ -1,0 +1,5 @@
+enabled: false
+namespace: openshift-redhat-insights
+insights:
+  name: cluster
+  credentialsSecret: insights-creds

@@ -1,0 +1,20 @@
+enabled: false
+config:
+  name: cluster
+  external_secrets_namespace: external-secrets-operator
+  refresh_interval: 1h
+  cluster_secret_stores:
+    - name: platform-secrets
+      namespace: ""
+      spec:
+        provider:
+          gcpsm:
+            projectID: example-gcp-project
+            auth:
+              workloadIdentityFederation:
+                audience: ""
+                serviceAccountRef:
+                  name: external-secrets-operator
+                  namespace: external-secrets-operator
+certManager:
+  enabled: false

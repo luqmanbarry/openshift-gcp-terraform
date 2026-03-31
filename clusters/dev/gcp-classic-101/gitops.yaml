@@ -1,0 +1,45 @@
+overlay: cluster-applications
+applications:
+  platform:
+    - name: cluster-autoscaler
+      enabled: false
+      values_file: values/cluster-autoscaler.yaml
+    - name: external-secrets-config
+      enabled: false
+      values_file: values/external-secrets-config.yaml
+    - name: external-secrets-operator
+      enabled: false
+      values_file: values/external-secrets-operator.yaml
+    - name: global-cluster-pull-secret
+      enabled: false
+      values_file: values/global-cluster-pull-secret.yaml
+    - name: groups-rbac
+      enabled: false
+      values_file: values/groups-rbac.yaml
+    - name: service-account-annotations
+      enabled: false
+      values_file: values/service-account-annotations.yaml
+    - name: internal-image-registry
+      enabled: false
+      values_file: values/internal-image-registry.yaml
+    - name: namespace-onboarding
+      enabled: false
+      values_file: values/namespace-onboarding.yaml
+    - name: cost-management
+      enabled: false
+      values_file: values/cost-management.yaml
+    - name: oadp-operator
+      enabled: false
+      values_file: values/oadp-operator.yaml
+    - name: openshift-service-mesh-operator-bootstrap
+      enabled: false
+      values_file: values/openshift-service-mesh-operator-bootstrap.yaml
+    - name: group-sync-operator
+      enabled: false
+      values_file: values/group-sync-operator.yaml
+    - name: identity-providers
+      enabled: false
+      values_file: values/identity-providers.yaml
+    - name: image-registries-allow-deny
+      enabled: false
+      values_file: values/image-registry-allow-deny.yaml

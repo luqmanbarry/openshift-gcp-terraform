@@ -1,0 +1,94 @@
+clusterName: gcp-classic-301
+clusterSecretStoreName: platform-secrets
+operators:
+  servicemesh:
+    name: servicemeshoperator
+    namespace: service-mesh-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: automatic
+    config:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      nodeSelector: {}
+      tolerations: {}
+  kiali:
+    name: kiali-ossm
+    namespace: kiali-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: automatic
+    config:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      nodeSelector: {}
+      tolerations: {}
+  otel:
+    name: opentelemetry-product
+    namespace: otel-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: automatic
+    config:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      nodeSelector: {}
+      tolerations: {}
+  tempo:
+    name: tempo-product
+    namespace: tempo-operator
+    channel: stable
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    installPlanApproval: automatic
+    config:
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4Gi
+      nodeSelector: {}
+      tolerations: {}
+    gcs:
+      secretName: tempo-gcs-credentials
+      bucketName: changeme-tempo-traces
+      remoteSecretKey: tempo-gcs-key-json
+      audience: openshift
+tenants:
+  - name: platform
+    smcp:
+      namespace: platform-mesh
+      version: v2.6
+      gateways:
+        enabled: true
+        ingress:
+          enabled: true
+        egress:
+          enabled: true
+        openshiftRoute:
+          enabled: false
+      jaeger:
+        enabled: true
+      kiali:
+        enabled: true
+      prometheus:
+        enabled: true
+      grafana:
+        enabled: true
+      mutualTLS:
+        enabled: true
+      rollMembers:
+        - platform-apps
+      rbac:
+        - roleKind: Role
+          roleName: istio-admin
+          subjectKind: Group
+          subjectName: platform-admins

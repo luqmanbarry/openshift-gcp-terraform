@@ -1,0 +1,10 @@
+{{- if .Values.enabled }}
+apiVersion: insights.openshift.io/v1alpha1
+kind: RedHatInsights
+metadata:
+  name: {{ .Values.insights.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  insightsSecret:
+    name: {{ .Values.insights.credentialsSecret }}
+{{- end }}

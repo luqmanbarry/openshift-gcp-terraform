@@ -1,0 +1,5 @@
+cluster_dir: clusters/dev/gcp-classic-101
+terraform_action: plan
+default_kubeconfig_filename: ~/.kube/config
+managed_cluster_kubeconfig_filename: ~/.managed_cluster_kube/config
+acmhub_kubeconfig_filename: ~/.acmhub_kube/config

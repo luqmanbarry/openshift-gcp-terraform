@@ -1,0 +1,30 @@
+{{- if .Values.pv.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.pv.name }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  storageClassName: {{ .Values.pv.storageClassName }}
+  capacity:
+    storage: {{ .Values.pv.capacity }}
+  accessModes:
+{{ toYaml .Values.pv.accessModes | indent 4 }}
+  persistentVolumeReclaimPolicy: {{ .Values.pv.reclaimPolicy }}
+  {{- if .Values.pv.csi.enabled }}
+  csi:
+    driver: {{ required "pv.csi.driver is required when pv.csi.enabled is true" .Values.pv.csi.driver }}
+    {{- if .Values.pv.secretRef.name }}
+    nodeStageSecretRef:
+      name: {{ .Values.pv.secretRef.name }}
+      namespace: {{ .Values.pv.secretRef.namespace }}
+    {{- end }}
+  {{- else }}
+  nfs:
+    server: {{ required "pv.nfs.server is required when pv.enabled is true and pv.csi.enabled is false" .Values.pv.nfs.server }}
+    path: {{ required "pv.nfs.path is required when pv.enabled is true and pv.csi.enabled is false" .Values.pv.nfs.path }}
+  {{- end }}
+{{- end }}

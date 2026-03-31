@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cert-manager-config
+description: Configures cert-manager issuers and shared certificate settings.
+type: application
+version: 0.1.0
+appVersion: "1.0"

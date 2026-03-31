@@ -1,0 +1,12 @@
+namespace: portworx
+
+storageCluster:
+  enabled: false
+  name: portworx
+  annotations: {}
+  spec:
+    csi:
+      enabled: true
+      installSnapshotController: true
+    autopilot:
+      enabled: false

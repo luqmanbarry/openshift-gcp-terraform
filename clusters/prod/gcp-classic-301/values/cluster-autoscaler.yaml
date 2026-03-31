@@ -1,0 +1,24 @@
+enableAutoScale: false
+cluster:
+  maxNodesCount: 60
+  cpu:
+    min: 8
+    max: 400
+  memory:
+    min: 16
+    max: 800
+  delayAfterAdd: 10m
+  delayAfterDelete: 5m
+  delayAfterFailure: 30s
+  unneededTime: 5m
+  utilizationThreshold: "0.3"
+  gpus:
+    enable: false
+    devices:
+      - type: nvidia.com/gpu
+        min: 0
+        max: 16
+machineSets:
+  - name: gcp-classic-301-worker-us-south1-a
+    minReplicas: 1
+    maxReplicas: 18

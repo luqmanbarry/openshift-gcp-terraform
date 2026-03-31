@@ -1,0 +1,10 @@
+name: observability
+replicas: 3
+machine_type: n4-standard-16
+labels:
+  node-role.kubernetes.io/infra: ""
+  workload.platform/observability: "true"
+taints:
+  - key: workload.platform/observability
+    value: "true"
+    effect: NoSchedule

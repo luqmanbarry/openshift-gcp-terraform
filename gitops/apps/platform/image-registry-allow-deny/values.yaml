@@ -1,0 +1,23 @@
+secretStoreName: platform-secrets
+pullSecretSMSecretName: ""
+resourceNamePrefix: 'day2-gitops'
+patchSchedule: "0 2 * * *"
+ocpVersion: v4.18
+
+clusterName: "changeme"
+
+registriesTrustedCerts: []
+
+registriesCertsConfigMap: registries-config-certs
+copyTrustedCABundleJob:
+  enabled: false
+# REGISTRIES ARE BLOCKED BY DEFAULT - ADD REGISTRY/IMAGE TO UNBLOCK
+allowList:
+  - mcr.microsoft.com
+  - ghcr.io
+  - gcr.io
+  - public.ecr.aws
+  - registry1.dso.mil
+  - docker.io  # Registry based whitelisting
+  - docker.io/bitnami/postgresql:14.15.0-debian-12-r12  # Tag based whitelisting
+  - docker.io/bitnami/postgresql:sha256-312dca99b4d5829e7c427c88632dbee171d6b800217fffd3c4a24f8f4150fb0f  # Sha based whitelisting

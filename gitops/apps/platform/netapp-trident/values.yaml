@@ -1,0 +1,23 @@
+operator:
+  install: false
+  namespace: openshift-operators
+  createNamespace: false
+  subscriptionName: trident-operator
+  packageName: trident-operator
+  channel: stable
+  installPlanApproval: Manual
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+
+tridentOrchestrator:
+  enabled: false
+  name: trident
+  namespace: trident
+  spec:
+    namespace: trident
+    debug: false
+    silenceAutosupport: false
+    IPv6: false
+    k8sTimeout: 30
+    imageRegistry: ""
+    nodePrep: []

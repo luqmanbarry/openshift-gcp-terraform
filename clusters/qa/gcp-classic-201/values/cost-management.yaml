@@ -1,0 +1,15 @@
+install:
+  enabled: false
+  namespace: cost-management
+  subscriptionName: cost-management
+  packageName: redhat-cost-management
+  channel: stable
+  installPlanApproval: Manual
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+
+app:
+  enabled: false
+  namespace: cost-management
+  config:
+    enableChargebackReporting: true

@@ -1,0 +1,14 @@
+clusterName: gcp-classic-101
+namespace: openshift-adp
+
+enabled: true
+defaultVolumesToFsBackup: true
+projects:
+  - namespace: platform-apps
+    paused: false
+    cronSchedule: "0 0 * * *"
+    backupRetentionPeriod: 360h
+  - namespace: platform-monitoring
+    paused: false
+    cronSchedule: "0 0 * * *"
+    backupRetentionPeriod: 360h

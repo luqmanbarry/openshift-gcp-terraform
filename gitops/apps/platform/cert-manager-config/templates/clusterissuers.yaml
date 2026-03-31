@@ -1,0 +1,15 @@
+{{- $certManager := .Values | default dict }}
+{{- if $certManager.enabled }}
+{{- range $issuer := $certManager.cluster_issuers }}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ $issuer.name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "22"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+{{ toYaml $issuer.spec | indent 2 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,11 @@
+storageClass:
+  enabled: false
+  name: nfs-csi
+  defaultClass: false
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+  mountOptions: []
+  parameters:
+    server: ""
+    share: ""
+  allowVolumeExpansion: true

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: root-app
+description: Root Argo CD application used to bootstrap platform and workload applications.
+type: application
+version: 0.1.0
+appVersion: "1.0"

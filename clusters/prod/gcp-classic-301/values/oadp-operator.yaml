@@ -1,0 +1,16 @@
+clusterName: gcp-classic-301
+secretStoreName: platform-secrets
+namespace: openshift-adp
+subscriptionChannel: stable-1.4
+
+veleroSecretKeyFile: cloud
+credentialsSecretName: oadp-gcp-credentials
+defaultVolumesToFsBackup: true
+
+storage:
+  provider: gcp
+  bucket: changeme-oadp-backups
+  backupPrefix: gcp-classic-301
+  projectID: changeme-project
+  volumeSnapshotClassName: pd-balanced
+  credentialsRemoteKey: oadp-gcp-credentials

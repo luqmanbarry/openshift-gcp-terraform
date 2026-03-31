@@ -1,0 +1,24 @@
+{{- if .Values.aap.enabled }}
+apiVersion: aap.ansible.com/v1alpha1
+kind: AnsibleAutomationPlatform
+metadata:
+  name: {{ .Values.aap.name }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  no_log: {{ .Values.aap.no_log }}
+  image_pull_policy: {{ .Values.aap.image_pull_policy }}
+  api:
+{{ toYaml .Values.aap.api | indent 4 }}
+  redis:
+{{ toYaml .Values.aap.redis | indent 4 }}
+  database:
+{{ toYaml .Values.aap.database | indent 4 }}
+  controller:
+{{ toYaml .Values.aap.controller | indent 4 }}
+  hub:
+{{ toYaml .Values.aap.hub | indent 4 }}
+  eda:
+{{ toYaml .Values.aap.eda | indent 4 }}
+{{- end }}

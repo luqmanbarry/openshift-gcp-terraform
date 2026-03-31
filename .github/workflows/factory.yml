@@ -1,0 +1,271 @@
+name: factory
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      cluster_dir:
+        description: Cluster directory to run. Leave empty to use changed clusters.
+        required: false
+        type: string
+      mode:
+        description: Workflow mode for a manual run.
+        required: true
+        default: plan
+        type: choice
+        options:
+          - validate
+          - plan
+          - apply
+
+env:
+  PYTHON_VERSION: "3.12"
+  TERRAFORM_VERSION: "1.8.5"
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.changed.outputs.has_changes }}
+      matrix: ${{ steps.changed.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed clusters
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/detect_changed_clusters.sh scripts/list_changed_clusters_json.sh
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.cluster_dir }}" ]]; then
+            matrix_json="$(scripts/list_changed_clusters_json.sh --cluster-dir "${{ github.event.inputs.cluster_dir }}")"
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch origin "${{ github.base_ref }}"
+            matrix_json="$(scripts/list_changed_clusters_json.sh --base-ref "origin/${{ github.base_ref }}" --head-ref HEAD)"
+          else
+            base_ref="${{ github.event.before }}"
+            if [[ -z "$base_ref" || "$base_ref" == "0000000000000000000000000000000000000000" ]]; then
+              base_ref="$(git rev-parse HEAD~1)"
+            fi
+            matrix_json="$(scripts/list_changed_clusters_json.sh --base-ref "$base_ref" --head-ref "${{ github.sha }}")"
+          fi
+
+          count="$(printf '%s' "$matrix_json" | jq '.include | length')"
+          {
+            echo "matrix<<EOF"
+            echo "$matrix_json"
+            echo "EOF"
+            if [[ "$count" -gt 0 ]]; then
+              echo "has_changes=true"
+            else
+              echo "has_changes=false"
+            fi
+          } >> "$GITHUB_OUTPUT"
+
+  validate:
+    if: needs.detect.outputs.has_changes == 'true'
+    needs: detect
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up OpenShift CLI
+        uses: redhat-actions/oc-installer@v1
+        with:
+          version: latest
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install jq and ripgrep
+        run: sudo apt-get update && sudo apt-get install -y jq ripgrep
+
+      - name: Install Python dependencies
+        run: python3 -m pip install --upgrade pyyaml
+
+      - name: Check required CI tools
+        run: |
+          chmod +x scripts/check_required_ci_tools.sh
+          scripts/check_required_ci_tools.sh bash git jq python3 terraform helm rg oc gcloud
+
+      - name: Validate cluster stack
+        env:
+          TF_IN_AUTOMATION: "true"
+          TF_VAR_ocm_token: dummy
+        run: |
+          chmod +x scripts/run_cluster_workflow.sh
+          scripts/run_cluster_workflow.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --artifact-dir ".artifacts/validate/${{ matrix.cluster_slug }}" \
+            --mode validate \
+            --backend false
+
+  plan:
+    if: |
+      needs.detect.outputs.has_changes == 'true' &&
+      github.event_name != 'pull_request' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && contains(fromJson('["plan","apply"]'), github.event.inputs.mode))
+      )
+    needs:
+      - detect
+      - validate
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_VAR_ocm_token: ${{ secrets.OCM_TOKEN }}
+      TF_BACKEND_BUCKET: ${{ vars.TF_BACKEND_BUCKET }}
+      TF_BACKEND_PREFIX: ${{ vars.TF_BACKEND_PREFIX }}
+      TF_BACKEND_IMPERSONATE_SERVICE_ACCOUNT: ${{ vars.TF_BACKEND_IMPERSONATE_SERVICE_ACCOUNT }}
+      TF_BACKEND_KMS_ENCRYPTION_KEY: ${{ vars.TF_BACKEND_KMS_ENCRYPTION_KEY }}
+      TF_BACKEND_STORAGE_CUSTOM_ENDPOINT: ${{ vars.TF_BACKEND_STORAGE_CUSTOM_ENDPOINT }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up OpenShift CLI
+        uses: redhat-actions/oc-installer@v1
+        with:
+          version: latest
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install jq and ripgrep
+        run: sudo apt-get update && sudo apt-get install -y jq ripgrep
+
+      - name: Install Python dependencies
+        run: python3 -m pip install --upgrade pyyaml
+
+      - name: Plan cluster stack
+        run: |
+          chmod +x scripts/run_cluster_workflow.sh scripts/write_backend_config.sh
+          artifact_dir=".artifacts/plan/${{ matrix.cluster_slug }}"
+          mkdir -p "$artifact_dir"
+          scripts/write_backend_config.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --output "$artifact_dir/backend.hcl"
+          scripts/run_cluster_workflow.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --artifact-dir "$artifact_dir" \
+            --mode plan \
+            --backend true \
+            --backend-config-file "$artifact_dir/backend.hcl"
+
+  apply:
+    if: |
+      needs.detect.outputs.has_changes == 'true' &&
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.mode == 'apply' &&
+      github.event.inputs.cluster_dir != ''
+    needs:
+      - detect
+      - validate
+      - plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_VAR_ocm_token: ${{ secrets.OCM_TOKEN }}
+      TF_BACKEND_BUCKET: ${{ vars.TF_BACKEND_BUCKET }}
+      TF_BACKEND_PREFIX: ${{ vars.TF_BACKEND_PREFIX }}
+      TF_BACKEND_IMPERSONATE_SERVICE_ACCOUNT: ${{ vars.TF_BACKEND_IMPERSONATE_SERVICE_ACCOUNT }}
+      TF_BACKEND_KMS_ENCRYPTION_KEY: ${{ vars.TF_BACKEND_KMS_ENCRYPTION_KEY }}
+      TF_BACKEND_STORAGE_CUSTOM_ENDPOINT: ${{ vars.TF_BACKEND_STORAGE_CUSTOM_ENDPOINT }}
+      OCP_GCP_FACTORY_ALLOW_APPLY: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up OpenShift CLI
+        uses: redhat-actions/oc-installer@v1
+        with:
+          version: latest
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install jq and ripgrep
+        run: sudo apt-get update && sudo apt-get install -y jq ripgrep
+
+      - name: Install Python dependencies
+        run: python3 -m pip install --upgrade pyyaml
+
+      - name: Apply cluster stack
+        run: |
+          chmod +x scripts/run_cluster_workflow.sh scripts/write_backend_config.sh
+          artifact_dir=".artifacts/apply/${{ matrix.cluster_slug }}"
+          mkdir -p "$artifact_dir"
+          scripts/write_backend_config.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --output "$artifact_dir/backend.hcl"
+          scripts/run_cluster_workflow.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --artifact-dir "$artifact_dir" \
+            --mode apply \
+            --backend true \
+            --backend-config-file "$artifact_dir/backend.hcl"

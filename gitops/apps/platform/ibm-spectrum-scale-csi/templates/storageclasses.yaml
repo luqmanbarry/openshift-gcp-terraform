@@ -1,0 +1,19 @@
+{{- range .Values.storageClasses }}
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .name }}
+{{- with .annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+provisioner: spectrumscale.csi.ibm.com
+reclaimPolicy: {{ default "Delete" .reclaimPolicy }}
+volumeBindingMode: {{ default "Immediate" .volumeBindingMode }}
+allowVolumeExpansion: {{ default true .allowVolumeExpansion }}
+{{- with .parameters }}
+parameters:
+{{ toYaml . | indent 2 }}
+{{- end }}
+{{- end }}

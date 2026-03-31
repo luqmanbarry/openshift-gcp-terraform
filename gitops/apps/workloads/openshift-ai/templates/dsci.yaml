@@ -1,0 +1,19 @@
+{{- if .Values.dsci.enabled }}
+apiVersion: dscinitialization.opendatahub.io/v1
+kind: DSCInitialization
+metadata:
+  name: {{ .Values.dsci.name }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  applicationsNamespace: {{ .Values.dsci.applicationsNamespace }}
+  monitoring:
+    managementState: Managed
+    namespace: {{ .Values.dsci.monitoringNamespace }}
+  serviceMesh:
+    managementState: {{ .Values.dsci.serviceMeshManagementState }}
+  trustedCABundle:
+    managementState: {{ .Values.dsci.trustedCABundle.managementState }}
+    customCABundle: |
+{{ .Values.dsci.trustedCABundle.customCABundle | nindent 6 }}
+{{- end }}

@@ -1,0 +1,81 @@
+{{- range .Values.applications }}
+{{- $enabled := true }}
+{{- if hasKey . "enabled" }}
+{{- $enabled = .enabled }}
+{{- end }}
+{{- if $enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .name }}
+  namespace: {{ default "openshift-gitops" $.Values.gitopsNamespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: {{ .syncWave | quote }}
+spec:
+  destination:
+    namespace: {{ .namespace }}
+    server: https://kubernetes.default.svc
+  project: {{- if .project }} {{ .project }}{{- else if and (hasKey . "path") (hasPrefix "gitops/apps/platform/" .path) }} platform{{- else }} workloads{{- end }}
+  {{- $hasChart := hasKey . "chart" }}
+  {{- $hasValueFiles := and (hasKey . "valueFiles") .valueFiles }}
+  {{- if $hasValueFiles }}
+  sources:
+    - {{- if $hasChart }}
+      chart: {{ .chart }}
+      repoURL: {{ .repoURL }}
+      targetRevision: {{ .targetRevision }}
+      {{- else }}
+      path: {{ .path }}
+      repoURL: {{ $.Values.git.repoURL }}
+      targetRevision: {{ $.Values.git.targetRevision }}
+      {{- end }}
+      helm:
+        valueFiles:
+        {{- range .valueFiles }}
+          - $values/{{ . }}
+        {{- end }}
+        {{- if .helmValues }}
+        values: |
+{{ .helmValues | indent 10 }}
+        {{- end }}
+    - repoURL: {{ $.Values.git.repoURL }}
+      targetRevision: {{ $.Values.git.targetRevision }}
+      ref: values
+  {{- else }}
+  source:
+    {{- if $hasChart }}
+    chart: {{ .chart }}
+    repoURL: {{ .repoURL }}
+    targetRevision: {{ .targetRevision }}
+    {{- else }}
+    path: {{ .path }}
+    repoURL: {{ $.Values.git.repoURL }}
+    targetRevision: {{ $.Values.git.targetRevision }}
+    {{- end }}
+    {{- if .helmValues }}
+    helm:
+      values: |
+{{ .helmValues | indent 8 }}
+    {{- end }}
+  {{- end }}
+  {{- $syncPolicy := default (dict) .syncPolicy }}
+  {{- $automated := true }}
+  {{- if hasKey $syncPolicy "automated" }}
+  {{- $automated = $syncPolicy.automated }}
+  {{- end }}
+  {{- if or $automated (hasKey $syncPolicy "syncOptions") }}
+  syncPolicy:
+    {{- if $automated }}
+    automated:
+      prune: {{ default true $syncPolicy.prune }}
+      selfHeal: {{ default true $syncPolicy.selfHeal }}
+    {{- end }}
+    {{- $syncOptions := default (list "CreateNamespace=true") $syncPolicy.syncOptions }}
+    {{- with $syncOptions }}
+    syncOptions:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

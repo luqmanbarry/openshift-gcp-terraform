@@ -1,0 +1,10 @@
+{{- if .Values.install.enabled }}
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: {{ .Values.install.subscriptionName }}
+  namespace: {{ .Values.install.namespace }}
+spec:
+  targetNamespaces:
+    - {{ .Values.install.namespace }}
+{{- end }}

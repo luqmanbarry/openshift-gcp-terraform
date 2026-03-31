@@ -1,0 +1,19 @@
+{{- if .Values.foundationalServices.enabled }}
+apiVersion: operator.ibm.com/v1alpha1
+kind: OperandRequest
+metadata:
+  name: {{ .Values.foundationalServices.requestName }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  requests:
+    - operands:
+{{- range .Values.foundationalServices.operands }}
+        - name: {{ . }}
+{{- end }}
+      registry: {{ .Values.foundationalServices.registry }}
+      {{- if .Values.foundationalServices.registryNamespace }}
+      registryNamespace: {{ .Values.foundationalServices.registryNamespace }}
+      {{- end }}
+{{- end }}

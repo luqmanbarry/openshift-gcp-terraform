@@ -1,0 +1,6 @@
+apiVersion: v2
+name: openshift-virtualization-operator-bootstrap
+description: Installs the OpenShift Virtualization operator and HyperConverged resource.
+type: application
+version: 0.1.0
+appVersion: "1.0"

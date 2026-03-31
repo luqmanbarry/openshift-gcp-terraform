@@ -1,0 +1,29 @@
+enabled: true
+secretStoreName: platform-secrets
+idp:
+  openid:
+    enable: true
+    oauthCertsConfigMapName: oauth-config-certs
+    providers:
+      - name: corporate-oidc
+        enabled: true
+        clientID: changeme-client-id
+        clientSecretSecretName: corporate-oidc-client-secret
+        remoteSecretKey: corporate-oidc-client-secret
+        issuerURL: https://issuer.example.com/realms/platform
+        extraScopes:
+          - profile
+          - openid
+        extraAuthorizeParameters:
+          include_granted_scopes: "true"
+        claims:
+          preferredUsername:
+            - preferred_username
+            - email
+          name:
+            - name
+            - given_name
+          email:
+            - email
+          groups:
+            - groups

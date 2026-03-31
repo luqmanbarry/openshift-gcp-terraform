@@ -1,14 +1,22 @@
 # Local .terraform directories
 **/.terraform
 **/.terraform.lock.hcl
+.terraform
+.terraform.lock.hcl
 
 # .tfstate files
 **/*.tfstate
 **/*.tfstate.*
+*.tfstate
+*.tfstate.*
 **/*.out
+*.out
 
 # plan files
 **/*.plan
+**/*.tfplan
+*.plan
+tfplan
 
 # Crash log files
 crash.log
@@ -27,6 +35,8 @@ override.tf.json
 
 **/.terraformrc
 **/terraform.rc
+.terraform.d/
+**/.terraform.d/
 
 **/*.log.*
 
@@ -37,6 +47,7 @@ override.tf.json
 **/Chart.lock
 
 **/.kube
+.kube
 
 **/.scratch_dir
 
@@ -46,3 +57,13 @@ override.tf.json
 **/cluster-build.txt
 **/cluster-details.json
 **/cluster-acmhub.json
+__pycache__/
+*.pyc
+rendered/
+**/rendered/
+**/terraform.auto.tfvars.json
+**/backend.hcl
+**/backend_override.tfbackend
+**/*.tfbackend
+.artifacts/
+out/

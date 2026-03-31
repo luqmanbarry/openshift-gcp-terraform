@@ -1,0 +1,77 @@
+namespaces: []
+featureCatalog:
+  serviceMesh:
+    namespaceLabelKey: factory.gitops/service-mesh
+    namespaceLabelValue: enabled
+  openshiftAI:
+    namespaceLabelKey: factory.gitops/openshift-ai
+    namespaceLabelValue: enabled
+  cp4ba:
+    namespaceLabelKey: factory.gitops/cp4ba
+    namespaceLabelValue: enabled
+  aap:
+    namespaceLabelKey: factory.gitops/aap
+    namespaceLabelValue: enabled
+sharedTenantArgoCD:
+  enabled: false
+  namespace: openshift-gitops-tenants
+  instanceName: tenant-gitops
+  instance:
+    server:
+      route:
+        enabled: true
+      resources: {}
+    controller:
+      resources: {}
+    repo:
+      resources: {}
+    redis:
+      resources: {}
+    applicationSet:
+      resources: {}
+  globalSecretStoreRef:
+    name: platform-secrets
+    kind: ClusterSecretStore
+  rbac:
+    defaultPolicy: role:none
+    scopes: "[groups]"
+  namespaceResourceBlacklist:
+    - group: rbac.authorization.k8s.io
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding
+    - group: ""
+      kind: ResourceQuota
+    - group: ""
+      kind: LimitRange
+    - group: argoproj.io
+      kind: AppProject
+    - group: operators.coreos.com
+      kind: OperatorGroup
+    - group: operators.coreos.com
+      kind: Subscription
+    - group: operators.coreos.com
+      kind: InstallPlan
+    - group: external-secrets.io
+      kind: ClusterSecretStore
+    - group: external-secrets.io
+      kind: SecretStore
+    - group: networking.k8s.io
+      kind: NetworkPolicy
+    - group: project.openshift.io
+      kind: Project
+  clusterResourceWhitelist: []
+tenants: []
+projectRequestTemplate:
+  enabled: false
+  name: project-request-template
+  labels: {}
+  annotations: {}
+  resourceQuota: {}
+  limitRange: {}
+  networkPolicies:
+    defaultDenyIngress: false
+    defaultDenyEgress: false
+    allowSameNamespaceIngress: false
+    allowSameNamespaceEgress: false
+    allowClusterDNS: false

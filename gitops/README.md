@@ -1,186 +1,30 @@
-# OpenShift Day2 configuration using GitOps
+# GitOps
 
-## Architecture
+OpenShift GitOps keeps the OSD on GCP cluster configuration in sync after Terraform bootstrap. The layout now follows the same factory pattern used in `rosa-classic-terraform/`: bootstrap charts, a shared overlay, reusable platform charts, and reusable workload charts.
 
-![Day-2 GitOps Architecture](.assets/tf-day2-gitops-architecture.jpg)
+## GitOps Flow
 
+1. Terraform installs the OpenShift GitOps operator.
+2. Terraform creates the root Argo CD `Application` from `gitops/bootstrap/root-app/`.
+3. The root app points to `gitops/overlays/cluster-applications/`.
+4. The shared overlay creates the `platform` and `workloads` `AppProject` resources and their child applications.
+5. Each child application syncs a chart from `gitops/apps/platform/` or `gitops/apps/workloads/`.
 
-## Sub Directories
+## Layout
 
-- [gitops/bootstrap](./gitops/bootstrap/): Deploys and configure the OpenShift GitOps operator. Configurations such as adding a repository, RBAC, App of apps pattern are configured after the Operator deployment.
+- `bootstrap/`: charts used directly by Terraform bootstrap
+- `apps/platform/`: reusable platform charts and operator starters
+- `apps/workloads/`: reusable workload charts and workload starters
+- `overlays/cluster-applications/`: shared app-of-apps overlay used by every cluster
 
-- [gitops/modules](./gitops/modules/): Cluster Day2 configuration items are implemented using GitOps patterns. Each configuration item represents a module packaged as a Helm chart.
+## App Inventory
 
-- [gitops/argocd-apps](./gitops/argocd-apps/): The Helm chart that defines the ArgoCD applications manifests used for the deployment of the Day2 configuration modules; one helm chart per Day2 module.
+- The platform and workload app directories intentionally mirror the ROSA repo inventory so both repos use the same GitOps pattern.
+- Existing GCP-capable charts were copied into `apps/`.
+- Existing active app inventory now tracks the ROSA platform and workload layout directly, with GCP-specific implementation where cloud-specific behavior is required.
 
-## Pre-requisites
-- OCP Cluster
-- GCP Secrets Manager
-- Storage Bucket
-- Bastion host with these packages: openshift-client, gcloud cli, terraform, helm, jq, python3
+## Enabling Apps
 
-## Procedure
-
-1. Deactivate all ArgoCD Application
-   - At first deactivate all modules except the openshift-gitops module. Use the `values.<cluster-name>.yaml` file of the [argocd-apps](./argocd-apps/) helm chart.
-      ```yaml
-      clusterName: 'osd-lbarry-101'
-
-      git:
-        targetRevision: main
-
-      # Helm does not support merge for variables of type list. 
-      # The complete list have be provided if variable specified.
-      modules: # List of modules to be deployed
-        - name: openshift-gitops
-          config_path: gitops/bootstrap/openshift-gitops
-          sync_wave: 1
-        - name: argocd-config
-          config_path: gitops/bootstrap/argocd-config
-          sync_wave: 100
-        # - name: external-secrets-operator
-        #   config_path: gitops/modules/external-secrets-operator
-        #   sync_wave: 101
-        # - name: secrets-store-csi-driver
-        #   config_path: gitops/modules/secrets-store-csi-driver
-        #   sync_wave: 101
-        # - name: openshift-compliance
-        #   config_path: gitops/modules/compliance-operator
-        #   sync_wave: 102
-        # - name: container-security
-        #   config_path: gitops/modules/container-security
-        #   sync_wave: 103
-        # - name: internal-image-registry
-        #   config_path: gitops/modules/internal-image-registry
-        #   sync_wave: 104
-        # - name: self-provisioner
-        #   config_path: gitops/modules/self-provisioner
-        #   sync_wave: 105
-        # - name: user-workload-monitoring
-        #   config_path: gitops/modules/user-workload-monitoring
-        #   sync_wave: 106
-        # - name: image-registries-allow-deny
-        #   config_path: gitops/modules/image-registries-allow-deny
-        #   sync_wave: 107
-        # - name: global-cluster-pull-secret
-        #   config_path: gitops/modules/global-cluster-pull-secret
-        #   sync_wave: 108
-        # - name: image-registries-proxy
-        #   config_path: gitops/modules/image-registries-proxy
-        #   sync_wave: 109
-        # - name: cluster-log-forwarder
-        #   config_path: gitops/modules/cluster-log-forwarder
-        #   sync_wave: 110
-        # - name: gitlab-runners
-        #   config_path: gitops/modules/gitlab-runners
-        #   sync_wave: 110
-        # - name: splunk-log-forwarder
-        #   config_path: gitops/modules/splunk-log-forwarder
-        #   sync_wave: 110
-        # - name: identity-providers
-        #   config_path: gitops/modules/identity-providers
-        #   sync_wave: 111
-        # - name: groups-rbac
-        #   config_path: gitops/modules/groups-rbac
-        #   sync_wave: 112
-        # - name: oadp-operator
-        #   config_path: gitops/modules/oadp-operator
-        #   sync_wave: 113
-        # - name: sample-apps
-        #   config_path: gitops/modules/sample-apps
-        #   sync_wave: 114 
-        # - name: oadp-backup
-        #   config_path: gitops/modules/oadp-backup
-        #   sync_wave: 115
-        # - name: oadp-restore
-        #   config_path: gitops/modules/oadp-restore
-        #   sync_wave: 999
-      ```
-2. Deploy the OpenShift GitOps operator.
-   Deployment and configuration codes are defined in the [bootstrap](./bootstrap/) sub-directory.
-
-   > [!INFO]
-   > We could use Ansible to achieve the same level of automation by replacing the Terraform code by Ansible.
-
-3. Prepare the [Day2 configuration modules](./modules/) parameters. Use the `values.<cluster-name>.yaml` file for each cluster.
-
-4. Activate the modules as they become ready for deployment.
-
-    For example, the external-secrets-operator should be the first operator deployed after configuring ArgoCD.
-
-    After having set the ESO inputs in the `values.<cluster-name>.yaml` file, we'll activate it for deployment on the cluster.
-
-    ```yaml
-    clusterName: 'osd-lbarry-101'
-
-    git:
-      targetRevision: main
-
-    # Helm does not support merge for variables of type list. 
-    # The complete list have be provided if variable specified.
-    modules: # List of modules to be deployed
-      - name: openshift-gitops
-        config_path: gitops/bootstrap/openshift-gitops
-        sync_wave: 1
-      - name: argocd-config
-        config_path: gitops/bootstrap/argocd-config
-        sync_wave: 100
-      - name: external-secrets-operator
-        config_path: gitops/modules/external-secrets-operator
-        sync_wave: 101
-      - name: secrets-store-csi-driver
-        config_path: gitops/modules/secrets-store-csi-driver
-        sync_wave: 101
-      # - name: openshift-compliance
-      #   config_path: gitops/modules/compliance-operator
-      #   sync_wave: 102
-      # - name: container-security
-      #   config_path: gitops/modules/container-security
-      #   sync_wave: 103
-      # - name: internal-image-registry
-      #   config_path: gitops/modules/internal-image-registry
-      #   sync_wave: 104
-      # - name: self-provisioner
-      #   config_path: gitops/modules/self-provisioner
-      #   sync_wave: 105
-      # - name: user-workload-monitoring
-      #   config_path: gitops/modules/user-workload-monitoring
-      #   sync_wave: 106
-      # - name: image-registries-allow-deny
-      #   config_path: gitops/modules/image-registries-allow-deny
-      #   sync_wave: 107
-      # - name: global-cluster-pull-secret
-      #   config_path: gitops/modules/global-cluster-pull-secret
-      #   sync_wave: 108
-      # - name: image-registries-proxy
-      #   config_path: gitops/modules/image-registries-proxy
-      #   sync_wave: 109
-      # - name: cluster-log-forwarder
-      #   config_path: gitops/modules/cluster-log-forwarder
-      #   sync_wave: 110
-      # - name: gitlab-runners
-      #   config_path: gitops/modules/gitlab-runners
-      #   sync_wave: 110
-      # - name: splunk-log-forwarder
-      #   config_path: gitops/modules/splunk-log-forwarder
-      #   sync_wave: 110
-      # - name: identity-providers
-      #   config_path: gitops/modules/identity-providers
-      #   sync_wave: 111
-      # - name: groups-rbac
-      #   config_path: gitops/modules/groups-rbac
-      #   sync_wave: 112
-      # - name: oadp-operator
-      #   config_path: gitops/modules/oadp-operator
-      #   sync_wave: 113
-      # - name: sample-apps
-      #   config_path: gitops/modules/sample-apps
-      #   sync_wave: 114 
-      # - name: oadp-backup
-      #   config_path: gitops/modules/oadp-backup
-      #   sync_wave: 115
-      # - name: oadp-restore
-      #   config_path: gitops/modules/oadp-restore
-      #   sync_wave: 999
-  
-    ```
+- Each cluster selects apps in `clusters/<group-path>/<cluster>/gitops.yaml`.
+- Each app reads its values from `clusters/<group-path>/<cluster>/values/`.
+- Keep secrets out of Git. For this repo, the default secret flow is Google Secret Manager through External Secrets Operator.

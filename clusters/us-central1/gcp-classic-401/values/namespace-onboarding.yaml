@@ -1,0 +1,33 @@
+namespaces:
+  - name: team-a-dev
+    displayName: Team A Development
+    description: Shared namespace for Team A development workloads
+    labels:
+      tenant: team-a
+      environment: dev
+    resourceQuota:
+      name: team-a-quota
+      hard:
+        requests.cpu: "8"
+        requests.memory: 16Gi
+        limits.cpu: "16"
+        limits.memory: 32Gi
+    limitRange:
+      name: team-a-defaults
+      limits:
+        - type: Container
+          default:
+            cpu: 500m
+            memory: 1Gi
+          defaultRequest:
+            cpu: 100m
+            memory: 256Mi
+    roleBindings:
+      - group: team-a-developers
+        role: edit
+      - group: team-a-operators
+        role: admin
+    networkPolicies:
+      defaultDenyIngress: true
+      allowSameNamespaceIngress: true
+      allowClusterDNS: true

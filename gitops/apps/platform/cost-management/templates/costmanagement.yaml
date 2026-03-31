@@ -1,0 +1,9 @@
+{{- if .Values.app.enabled }}
+apiVersion: costmanagement-metrics-cfg.openshift.io/v1beta1
+kind: CostManagement
+metadata:
+  name: costmanagement
+  namespace: {{ .Values.app.namespace }}
+spec:
+{{ toYaml .Values.app.config | indent 2 }}
+{{- end }}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: advanced-cluster-security-operator-bootstrap
+description: Installs the Advanced Cluster Security operator bootstrap resources.
+type: application
+version: 0.1.0
+appVersion: "1.0"

@@ -1,0 +1,74 @@
+---
+apiVersion: oadp.openshift.io/v1alpha1
+kind: DataProtectionApplication
+metadata:
+  name:  {{ .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "4"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "4"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  backupImages: true
+  configuration:
+    velero:
+      podConfig:
+        resourceAllocations:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+      resourceTimeout: 10m
+      client-burst: 1000
+      client-qps: 500
+      itemOperationSyncFrequency: "10s"
+      defaultItemOperationTimeout: 1h
+      defaultVolumesToFSBackup: {{ .Values.defaultVolumesToFsBackup }}
+      {{ if not .Values.defaultVolumesToFsBackup }}
+      defaultSnapshotMoveData: true
+      {{ end }}
+      defaultPlugins:
+        - gcp
+        - openshift
+        - csi
+    nodeAgent:
+      enable: true
+      uploaderType: kopia
+      podConfig:
+        resourceAllocations:
+          limits:
+            cpu: "1"
+            memory: 4Gi
+          requests:
+            cpu: 50m
+            memory: 200Mi
+  backupLocations:
+    - name: "default"
+      velero:
+        provider: gcp
+        default: true
+        backupSyncPeriod: 1m
+        credential:
+          key: {{ .Values.veleroSecretKeyFile }}
+          name: {{ .Values.credentialsSecretName | lower }}
+        objectStorage:
+          bucket: {{ .Values.storage.bucket }}
+          prefix: {{ default .Values.clusterName .Values.storage.backupPrefix }}
+  {{ if not .Values.defaultVolumesToFsBackup }}
+  snapshotLocations:
+    - name: "default"
+      velero:
+        provider: gcp
+        default: true
+        config:
+          project: {{ .Values.storage.projectID }}
+        credential:
+          key: {{ .Values.veleroSecretKeyFile }}
+          name: {{ .Values.credentialsSecretName | lower }}
+        volumeSnapshotClassName: {{ .Values.storage.volumeSnapshotClassName }}
+        snapshotLocation: {{ .Values.storage.projectID }}
+  {{ end }}

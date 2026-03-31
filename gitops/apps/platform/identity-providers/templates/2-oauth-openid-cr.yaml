@@ -1,0 +1,37 @@
+{{ if and .Values.enabled .Values.idp.openid.enable }}
+---
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+  annotations:
+    # argocd.argoproj.io/sync-wave: "2"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "2"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  identityProviders:
+  {{ range $openIDProvider := .Values.idp.openid.providers }}
+  {{ if $openIDProvider.enabled }}
+    - name: {{ $openIDProvider.name }}
+      mappingMethod: claim
+      type: OpenID
+      openID:
+        clientID: {{ $openIDProvider.clientID }}
+        clientSecret:
+          name: {{ $openIDProvider.clientSecretSecretName }}
+        extraScopes:
+{{ toYaml (default (list "profile" "openid") $openIDProvider.extraScopes) | indent 8 }}
+        extraAuthorizeParameters: 
+{{ toYaml (default (dict "include_granted_scopes" "true") $openIDProvider.extraAuthorizeParameters) | indent 10 }}
+        claims:
+{{ toYaml (default (dict
+  "preferredUsername" (list "preferred_username" "email")
+  "name" (list "name" "given_name")
+  "email" (list "email")
+  "groups" (list "groups")
+) $openIDProvider.claims) | indent 10 }}
+        issuer: {{ $openIDProvider.issuerURL }}
+  {{ end }}
+  {{ end }}
+{{ end }}

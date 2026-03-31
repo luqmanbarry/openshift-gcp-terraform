@@ -1,0 +1,32 @@
+enabled: false
+namespace: group-sync-operator
+secretStoreName: platform-secrets
+provider:
+  type: github
+  name: github-group-sync
+  syncCronSchedule: "*/30 * * * *"
+  prune: false
+  credentials:
+    secretName: github-group-sync
+    data:
+      - secretKey: token
+        remoteKey: github-group-sync-token
+  github:
+    organization: your-org
+    teams: []
+  gitlab:
+    url: https://gitlab.example.com
+    groups: []
+  keycloak:
+    url: https://keycloak.example.com
+    realm: master
+    groups: []
+  okta:
+    url: https://example.okta.com
+    groups: []
+  azure:
+    tenantID: changeme
+    groups: []
+  ibmsecurityverify:
+    tenantUrl: https://example.verify.ibm.com
+    groups: []

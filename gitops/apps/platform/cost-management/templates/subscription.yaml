@@ -1,0 +1,13 @@
+{{- if .Values.install.enabled }}
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: {{ .Values.install.subscriptionName }}
+  namespace: {{ .Values.install.namespace }}
+spec:
+  channel: {{ .Values.install.channel }}
+  installPlanApproval: {{ .Values.install.installPlanApproval }}
+  name: {{ .Values.install.packageName }}
+  source: {{ .Values.install.source }}
+  sourceNamespace: {{ .Values.install.sourceNamespace }}
+{{- end }}

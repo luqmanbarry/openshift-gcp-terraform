@@ -1,0 +1,19 @@
+{{- if .Values.pvc.enabled }}
+{{- $pvcNamespace := required "pvc.namespace is required when pvc.enabled is true" .Values.pvc.namespace }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.pvc.name }}
+  namespace: {{ $pvcNamespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  storageClassName: {{ .Values.pvc.storageClassName }}
+  accessModes:
+{{ toYaml .Values.pvc.accessModes | indent 4 }}
+  resources:
+{{ toYaml .Values.pvc.resources | indent 4 }}
+  volumeName: {{ .Values.pv.name }}
+{{- end }}

@@ -1,0 +1,6 @@
+name: aap
+replicas: 3
+machine_type: n4-standard-16
+labels:
+  workload.platform/aap: "true"
+taints: []

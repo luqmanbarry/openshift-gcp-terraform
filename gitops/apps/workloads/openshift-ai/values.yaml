@@ -1,0 +1,57 @@
+operator:
+  namespace: redhat-ods-operator
+  subscriptionName: rhods-operator
+  packageName: rhods-operator
+  channel: stable
+  installPlanApproval: Manual
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+
+dsci:
+  enabled: true
+  name: default-dsci
+  applicationsNamespace: redhat-ods-applications
+  monitoringNamespace: redhat-ods-monitoring
+  serviceMeshManagementState: Removed
+  trustedCABundle:
+    managementState: Managed
+    customCABundle: ""
+
+dsc:
+  enabled: true
+  name: default-dsc
+  components:
+    dashboard:
+      managementState: Managed
+    workbenches:
+      managementState: Managed
+    dataSciencePipelines:
+      managementState: Managed
+    modelmeshserving:
+      managementState: Removed
+    kserve:
+      managementState: Removed
+    codeflare:
+      managementState: Removed
+    ray:
+      managementState: Removed
+    trainingoperator:
+      managementState: Removed
+    kueue:
+      managementState: Unmanaged
+
+dashboardConfig:
+  enabled: true
+  apiVersion: opendatahub.io/v1alpha
+  kind: OdhDashboardConfig
+  name: odh-dashboard-config
+  namespace: redhat-ods-applications
+  spec:
+    dashboardConfig:
+      disableAcceleratorProfiles: true
+      disableHardwareProfiles: false
+      disableDistributedWorkloads: false
+      disablePipelines: false
+      disableModelServing: false
+
+hardwareProfiles: []

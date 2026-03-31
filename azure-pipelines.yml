@@ -1,0 +1,306 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  python_version: "3.12"
+  terraform_version: "1.8.5"
+  artifact_root: "$(Build.ArtifactStagingDirectory)"
+  cluster_dir_override: ""
+  workflow_mode: "plan"
+
+stages:
+  - stage: Detect
+    displayName: Detect changed clusters
+    jobs:
+      - job: detect_changed
+        displayName: Build cluster execution list
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - script: |
+              set -euo pipefail
+              chmod +x scripts/detect_changed_clusters.sh scripts/list_changed_clusters_json.sh
+
+              if [[ -n "$(cluster_dir_override)" ]]; then
+                matrix_json="$(scripts/list_changed_clusters_json.sh --cluster-dir "$(cluster_dir_override)" | jq -c '.')"
+              elif [[ "$(Build.Reason)" == "PullRequest" ]]; then
+                target_branch="$(System.PullRequest.TargetBranch)"
+                target_branch="${target_branch#refs/heads/}"
+                git fetch origin "$target_branch"
+                matrix_json="$(scripts/list_changed_clusters_json.sh --base-ref "origin/${target_branch}" --head-ref HEAD | jq -c '.')"
+              else
+                if git rev-parse HEAD~1 >/dev/null 2>&1; then
+                  base_ref="$(git rev-parse HEAD~1)"
+                else
+                  base_ref="$(git rev-parse HEAD)"
+                fi
+                matrix_json="$(scripts/list_changed_clusters_json.sh --base-ref "$base_ref" --head-ref HEAD | jq -c '.')"
+              fi
+
+              count="$(printf '%s' "$matrix_json" | jq '.include | length')"
+              clusters_csv="$(printf '%s' "$matrix_json" | jq -r '.include[].cluster_dir' | paste -sd ',' -)"
+              has_changes=false
+              if [[ "$count" -gt 0 ]]; then
+                has_changes=true
+              fi
+
+              echo "##vso[task.setvariable variable=changedClustersJson;isOutput=true]$matrix_json"
+              echo "##vso[task.setvariable variable=changedClustersCsv;isOutput=true]$clusters_csv"
+              echo "##vso[task.setvariable variable=hasChanges;isOutput=true]$has_changes"
+            displayName: Detect changed clusters
+            name: set_outputs
+
+  - stage: Validate
+    displayName: Validate changed clusters
+    dependsOn: Detect
+    condition: and(succeeded(), eq(stageDependencies.Detect.detect_changed.outputs['set_outputs.hasChanges'], 'true'))
+    variables:
+      changed_clusters_csv: $[ stageDependencies.Detect.detect_changed.outputs['set_outputs.changedClustersCsv'] ]
+    jobs:
+      - job: validate_clusters
+        displayName: Validate cluster stacks
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(python_version)"
+
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: "$(terraform_version)"
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y jq ripgrep
+            displayName: Install jq and ripgrep
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            displayName: Install Helm
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz -o /tmp/openshift-client-linux.tar.gz
+              tar -xzf /tmp/openshift-client-linux.tar.gz -C /tmp oc
+              sudo install /tmp/oc /usr/local/bin/oc
+            displayName: Install OpenShift CLI
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
+              curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+              echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list >/dev/null
+              sudo apt-get update
+              sudo apt-get install -y google-cloud-cli
+            displayName: Install gcloud CLI
+
+          - script: python3 -m pip install --upgrade pyyaml
+            displayName: Install Python dependencies
+
+          - script: |
+              set -euo pipefail
+              chmod +x scripts/run_cluster_workflow.sh
+              IFS=',' read -r -a clusters <<< "$(changed_clusters_csv)"
+              for cluster_dir in "${clusters[@]}"; do
+                [[ -z "$cluster_dir" ]] && continue
+                cluster_slug="$(printf '%s' "$cluster_dir" | tr '/' '_')"
+                artifact_dir="$(artifact_root)/validate/${cluster_slug}"
+                scripts/run_cluster_workflow.sh \
+                  --cluster-dir "$cluster_dir" \
+                  --artifact-dir "$artifact_dir" \
+                  --mode validate \
+                  --backend false
+              done
+            displayName: Validate cluster stacks
+            env:
+              TF_IN_AUTOMATION: "true"
+              TF_VAR_ocm_token: "dummy"
+
+  - stage: Plan
+    displayName: Backend plan
+    dependsOn:
+      - Detect
+      - Validate
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(stageDependencies.Detect.detect_changed.outputs['set_outputs.hasChanges'], 'true'), or(eq(variables['workflow_mode'], 'plan'), eq(variables['workflow_mode'], 'apply')))
+    variables:
+      changed_clusters_csv: $[ stageDependencies.Detect.detect_changed.outputs['set_outputs.changedClustersCsv'] ]
+    jobs:
+      - job: plan_clusters
+        displayName: Plan changed cluster stacks
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(python_version)"
+
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: "$(terraform_version)"
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y jq ripgrep
+            displayName: Install jq and ripgrep
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            displayName: Install Helm
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz -o /tmp/openshift-client-linux.tar.gz
+              tar -xzf /tmp/openshift-client-linux.tar.gz -C /tmp oc
+              sudo install /tmp/oc /usr/local/bin/oc
+            displayName: Install OpenShift CLI
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
+              curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+              echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list >/dev/null
+              sudo apt-get update
+              sudo apt-get install -y google-cloud-cli
+            displayName: Install gcloud CLI
+
+          - script: python3 -m pip install --upgrade pyyaml
+            displayName: Install Python dependencies
+
+          - script: |
+              set -euo pipefail
+              chmod +x scripts/run_cluster_workflow.sh scripts/write_backend_config.sh
+              IFS=',' read -r -a clusters <<< "$(changed_clusters_csv)"
+              for cluster_dir in "${clusters[@]}"; do
+                [[ -z "$cluster_dir" ]] && continue
+                cluster_slug="$(printf '%s' "$cluster_dir" | tr '/' '_')"
+                artifact_dir="$(artifact_root)/plan/${cluster_slug}"
+                mkdir -p "$artifact_dir"
+                scripts/write_backend_config.sh \
+                  --cluster-dir "$cluster_dir" \
+                  --output "$artifact_dir/backend.hcl"
+                scripts/run_cluster_workflow.sh \
+                  --cluster-dir "$cluster_dir" \
+                  --artifact-dir "$artifact_dir" \
+                  --mode plan \
+                  --backend true \
+                  --backend-config-file "$artifact_dir/backend.hcl"
+              done
+            displayName: Plan changed cluster stacks
+            env:
+              TF_IN_AUTOMATION: "true"
+              TF_VAR_ocm_token: "$(OCM_TOKEN)"
+              TF_BACKEND_BUCKET: "$(TF_BACKEND_BUCKET)"
+              TF_BACKEND_PREFIX: "$(TF_BACKEND_PREFIX)"
+              TF_BACKEND_IMPERSONATE_SERVICE_ACCOUNT: "$(TF_BACKEND_IMPERSONATE_SERVICE_ACCOUNT)"
+              TF_BACKEND_KMS_ENCRYPTION_KEY: "$(TF_BACKEND_KMS_ENCRYPTION_KEY)"
+              TF_BACKEND_STORAGE_CUSTOM_ENDPOINT: "$(TF_BACKEND_STORAGE_CUSTOM_ENDPOINT)"
+
+  - stage: Apply
+    displayName: Apply changed clusters
+    dependsOn:
+      - Detect
+      - Validate
+      - Plan
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['workflow_mode'], 'apply'), eq(stageDependencies.Detect.detect_changed.outputs['set_outputs.hasChanges'], 'true'))
+    variables:
+      changed_clusters_csv: $[ stageDependencies.Detect.detect_changed.outputs['set_outputs.changedClustersCsv'] ]
+    jobs:
+      - job: apply_clusters
+        displayName: Apply changed cluster stacks
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "$(python_version)"
+
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: "$(terraform_version)"
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y jq ripgrep
+            displayName: Install jq and ripgrep
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            displayName: Install Helm
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz -o /tmp/openshift-client-linux.tar.gz
+              tar -xzf /tmp/openshift-client-linux.tar.gz -C /tmp oc
+              sudo install /tmp/oc /usr/local/bin/oc
+            displayName: Install OpenShift CLI
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
+              curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+              echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list >/dev/null
+              sudo apt-get update
+              sudo apt-get install -y google-cloud-cli
+            displayName: Install gcloud CLI
+
+          - script: python3 -m pip install --upgrade pyyaml
+            displayName: Install Python dependencies
+
+          - script: |
+              set -euo pipefail
+              chmod +x scripts/run_cluster_workflow.sh scripts/write_backend_config.sh
+              IFS=',' read -r -a clusters <<< "$(changed_clusters_csv)"
+              for cluster_dir in "${clusters[@]}"; do
+                [[ -z "$cluster_dir" ]] && continue
+                cluster_slug="$(printf '%s' "$cluster_dir" | tr '/' '_')"
+                artifact_dir="$(artifact_root)/apply/${cluster_slug}"
+                mkdir -p "$artifact_dir"
+                scripts/write_backend_config.sh \
+                  --cluster-dir "$cluster_dir" \
+                  --output "$artifact_dir/backend.hcl"
+                scripts/run_cluster_workflow.sh \
+                  --cluster-dir "$cluster_dir" \
+                  --artifact-dir "$artifact_dir" \
+                  --mode apply \
+                  --backend true \
+                  --backend-config-file "$artifact_dir/backend.hcl"
+              done
+            displayName: Apply changed cluster stacks
+            env:
+              TF_IN_AUTOMATION: "true"
+              TF_VAR_ocm_token: "$(OCM_TOKEN)"
+              TF_BACKEND_BUCKET: "$(TF_BACKEND_BUCKET)"
+              TF_BACKEND_PREFIX: "$(TF_BACKEND_PREFIX)"
+              TF_BACKEND_IMPERSONATE_SERVICE_ACCOUNT: "$(TF_BACKEND_IMPERSONATE_SERVICE_ACCOUNT)"
+              TF_BACKEND_KMS_ENCRYPTION_KEY: "$(TF_BACKEND_KMS_ENCRYPTION_KEY)"
+              TF_BACKEND_STORAGE_CUSTOM_ENDPOINT: "$(TF_BACKEND_STORAGE_CUSTOM_ENDPOINT)"
+              OCP_GCP_FACTORY_ALLOW_APPLY: "true"

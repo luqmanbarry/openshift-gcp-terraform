@@ -1,0 +1,6 @@
+apiVersion: v2
+name: static-storage
+description: Manages static PV and PVC resources for pre-provisioned storage.
+type: application
+version: 0.1.0
+appVersion: "1.0"

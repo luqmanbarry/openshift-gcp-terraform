@@ -1,0 +1,31 @@
+enabled: false
+support:
+  prerequisitesConfirmed: false
+operator:
+  namespace: openshift-cnv
+  operator_group_name: kubevirt-hyperconverged-group
+  subscription_name: kubevirt-hyperconverged
+  subscription_channel: stable
+  subscription_source: redhat-operators
+  subscription_source_namespace: openshift-marketplace
+  install_plan_approval: Manual
+  package_name: kubevirt-hyperconverged
+hyperconverged:
+  name: kubevirt-hyperconverged
+  namespace: openshift-cnv
+  liveMigrationConfig:
+    bandwidthPerMigration: 64Mi
+    completionTimeoutPerGiB: 800
+    parallelMigrationsPerCluster: 5
+    parallelOutboundMigrationsPerNode: 2
+    progressTimeout: 150
+    allowPostCopy: false
+  infra:
+    nodePlacement:
+      nodeSelector: {}
+      tolerations: []
+  workloads:
+    nodePlacement:
+      nodeSelector: {}
+      tolerations: []
+  extraSpec: {}

@@ -1,9 +1,0 @@
-namespace: openshift-compliance
-clusterName: "changeme"
-resourceCommonName: "pci-dss-compliance"
-
-scanProfiles:
-  - ocp4-pci-dss
-autoApplyRemediations: true
-enableDebug: true
-scanSchedule: 0 5 * * * # https://crontab.guru/

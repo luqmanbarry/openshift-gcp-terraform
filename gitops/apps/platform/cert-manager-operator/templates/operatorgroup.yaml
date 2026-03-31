@@ -1,0 +1,8 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: {{ .Values.operatorGroup.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  targetNamespaces:
+{{ toYaml .Values.operatorGroup.targetNamespaces | indent 4 }}

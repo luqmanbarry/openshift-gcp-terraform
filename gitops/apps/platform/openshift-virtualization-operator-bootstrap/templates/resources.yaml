@@ -1,0 +1,57 @@
+{{- $virtualization := .Values | default dict }}
+{{- $support := $virtualization.support | default dict }}
+{{- $operator := $virtualization.operator | default dict }}
+{{- $hyperconverged := $virtualization.hyperconverged | default dict }}
+{{- if $virtualization.enabled }}
+{{- if not ($support.prerequisitesConfirmed | default false) }}
+{{ fail "OpenShift Virtualization requires platform, storage, and support prerequisites to be validated before enablement. Set support.prerequisitesConfirmed=true only after confirming the target OSD on GCP design is supported." }}
+{{- end }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $operator.namespace }}
+  labels:
+    openshift.io/cluster-monitoring: "true"
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: {{ $operator.operator_group_name }}
+  namespace: {{ $operator.namespace }}
+spec:
+  targetNamespaces:
+    - {{ $operator.namespace }}
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: {{ $operator.subscription_name }}
+  namespace: {{ $operator.namespace }}
+spec:
+  channel: {{ $operator.subscription_channel }}
+  installPlanApproval: {{ $operator.install_plan_approval }}
+  name: {{ $operator.package_name }}
+  source: {{ $operator.subscription_source }}
+  sourceNamespace: {{ $operator.subscription_source_namespace }}
+---
+apiVersion: hco.kubevirt.io/v1beta1
+kind: HyperConverged
+metadata:
+  name: {{ $hyperconverged.name | default "kubevirt-hyperconverged" }}
+  namespace: {{ $hyperconverged.namespace | default $operator.namespace }}
+spec:
+  liveMigrationConfig:
+{{ toYaml ($hyperconverged.liveMigrationConfig | default dict) | indent 4 }}
+{{- with $hyperconverged.infra }}
+  infra:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- with $hyperconverged.workloads }}
+  workloads:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- with $hyperconverged.extraSpec }}
+{{ toYaml . | indent 2 }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,25 @@
+namespace: cp4ba
+channel: v24.0
+subscriptionName: ibm-cp4a-operator
+packageName: ibm-cp4a-operator
+catalogSource:
+  name: ibm-cp4a-operator-catalog
+  namespace: openshift-marketplace
+installPlanApproval: Manual
+targetNamespaces: []
+startingCSV: ""
+labels:
+  app.kubernetes.io/part-of: cp4ba
+  workload.platform/type: business-automation
+foundationalServices:
+  enabled: false
+  requestName: common-service
+  registry: common-service
+  registryNamespace: ""
+  operands:
+    - ibm-cert-manager-operator
+    - ibm-mongodb-operator
+    - ibm-iam-operator
+    - ibm-management-ingress-operator
+    - ibm-commonui-operator
+    - ibm-platformui-operator

@@ -1,0 +1,30 @@
+{{- $shared := .Values.sharedTenantArgoCD | default dict }}
+{{- $tenants := .Values.tenants | default list }}
+{{- if $shared.enabled }}
+{{- range $tenant := $tenants }}
+{{- if $tenant.enabled }}
+{{- $projectName := default $tenant.name $tenant.project_name }}
+{{- range $namespace := $tenant.namespaces }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ printf "%s-argocd-deployer" $projectName }}
+  namespace: {{ $namespace }}
+rules:
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - applications
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

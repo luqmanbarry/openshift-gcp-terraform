@@ -1,0 +1,6 @@
+apiVersion: v2
+name: redhat-insights
+description: Register OpenShift with Red Hat Insights.
+type: application
+version: 0.1.0
+appVersion: "1.0"

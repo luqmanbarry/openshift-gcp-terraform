@@ -1,0 +1,6 @@
+apiVersion: v2
+name: nfs-csi
+description: Manages an NFS CSI storage class definition.
+type: application
+version: 0.1.0
+appVersion: "1.0"

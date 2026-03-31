@@ -1,0 +1,13 @@
+{{- $shared := .Values.sharedTenantArgoCD | default dict }}
+{{- if $shared.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: {{ $shared.instanceName }}
+  namespace: {{ $shared.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "33"
+spec:
+  resourceTrackingMethod: annotation+label
+{{- end }}

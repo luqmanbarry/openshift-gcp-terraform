@@ -1,0 +1,12 @@
+clusterName: changeme
+namespace: openshift-adp
+
+storageClassMapping:
+  standard-rwo: standard-rwo
+  balanced-rwo: balanced-rwo
+  default: standard-rwo
+
+enable: false
+backups: # List backups to restore from
+  - backup-xxxxxx
+  - backup-xyxyxy

@@ -1,0 +1,12 @@
+{{- $shared := .Values.sharedTenantArgoCD | default dict }}
+{{- if $shared.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: {{ $shared.namespace }}
+data:
+  policy.default: {{ $shared.rbac.defaultPolicy | quote }}
+  scopes: {{ $shared.rbac.scopes | quote }}
+{{- end }}

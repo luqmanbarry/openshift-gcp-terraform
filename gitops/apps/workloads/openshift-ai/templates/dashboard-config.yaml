@@ -1,0 +1,11 @@
+{{- if .Values.dashboardConfig.enabled }}
+apiVersion: {{ .Values.dashboardConfig.apiVersion }}
+kind: {{ .Values.dashboardConfig.kind }}
+metadata:
+  name: {{ .Values.dashboardConfig.name }}
+  namespace: {{ .Values.dashboardConfig.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+{{ toYaml .Values.dashboardConfig.spec | indent 2 }}
+{{- end }}

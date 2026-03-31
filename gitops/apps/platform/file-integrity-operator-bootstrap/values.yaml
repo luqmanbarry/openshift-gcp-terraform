@@ -1,0 +1,10 @@
+enabled: false
+operator:
+  namespace: openshift-file-integrity
+  operator_group_name: file-integrity-operator
+  subscription_name: file-integrity-operator
+  subscription_channel: stable
+  subscription_source: redhat-operators
+  subscription_source_namespace: openshift-marketplace
+  install_plan_approval: Manual
+  package_name: file-integrity-operator

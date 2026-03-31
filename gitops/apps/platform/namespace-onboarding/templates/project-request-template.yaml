@@ -1,0 +1,24 @@
+{{- if .Values.projectRequestTemplate.enabled }}
+{{- $template := .Values.projectRequestTemplate }}
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: {{ $template.name }}
+  namespace: openshift-config
+parameters:
+  - name: PROJECT_NAME
+    required: true
+  - name: PROJECT_DISPLAYNAME
+    required: false
+  - name: PROJECT_DESCRIPTION
+    required: false
+objects:
+  - apiVersion: project.openshift.io/v1
+    kind: Project
+    metadata:
+      name: ${PROJECT_NAME}
+    spec:
+      displayName: ${PROJECT_DISPLAYNAME}
+      description: ${PROJECT_DESCRIPTION}
+{{- end }}

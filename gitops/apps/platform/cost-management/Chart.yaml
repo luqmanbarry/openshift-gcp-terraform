@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cost-management
+description: Helm chart to install Red Hat Cost Management components.
+type: application
+version: 1.0.0
+appVersion: "1.0"

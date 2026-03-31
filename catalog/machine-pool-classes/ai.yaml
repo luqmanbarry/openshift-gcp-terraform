@@ -1,0 +1,6 @@
+name: ai
+replicas: 2
+machine_type: n4-standard-32
+labels:
+  workload.platform/ai: "true"
+taints: []

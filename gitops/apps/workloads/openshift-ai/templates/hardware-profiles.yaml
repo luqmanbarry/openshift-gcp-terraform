@@ -1,0 +1,11 @@
+{{- range $index, $profile := .Values.hardwareProfiles }}
+---
+apiVersion: {{ $profile.apiVersion }}
+kind: {{ $profile.kind }}
+metadata:
+{{ toYaml $profile.metadata | indent 2 }}
+{{- if $profile.spec }}
+spec:
+{{ toYaml $profile.spec | indent 2 }}
+{{- end }}
+{{- end }}

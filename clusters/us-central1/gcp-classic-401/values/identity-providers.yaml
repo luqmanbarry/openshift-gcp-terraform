@@ -1,0 +1,7 @@
+enabled: true
+secretStoreName: platform-secrets
+idp:
+  openid:
+    enable: false
+    oauthCertsConfigMapName: oauth-config-certs
+    providers: []

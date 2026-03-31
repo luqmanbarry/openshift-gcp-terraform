@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cp4ba-operator
+description: Installs the IBM Cloud Pak for Business Automation operator resources.
+type: application
+version: 0.1.0
+appVersion: "1.0"

@@ -1,0 +1,8 @@
+rbac:
+  assignments:
+    - ocpRole: "cluster-admin"
+      groupName: "platform-admins"
+    - ocpRole: "admin"
+      groupName: "platform-admins"
+    - ocpRole: "edit"
+      groupName: "platform-developers"

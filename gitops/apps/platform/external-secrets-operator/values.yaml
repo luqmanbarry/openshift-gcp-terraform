@@ -1,0 +1,24 @@
+namespace: external-secrets-operator
+subscription:
+  channel: stable
+  installPlanApproval: Automatic
+  name: external-secrets-operator
+  source: community-operators
+  sourceNamespace: openshift-marketplace
+
+clusterSecretStore:
+  enabled: false
+  name: platform-secrets
+  spec:
+    provider:
+      gcpsm:
+        projectID: example-gcp-project
+        auth:
+          workloadIdentityFederation:
+            audience: ""
+            serviceAccountRef:
+              name: external-secrets-operator
+              namespace: external-secrets-operator
+
+cleanupOnDelete:
+  enabled: false

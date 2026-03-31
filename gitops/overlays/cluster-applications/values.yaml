@@ -1,0 +1,19 @@
+clusterName: example-cluster
+gitopsNamespace: openshift-gitops
+git:
+  repoURL: ""
+  targetRevision: main
+
+projects:
+  - name: platform
+    namespace: openshift-gitops
+    description: Platform applications managed by the cluster factory.
+    sourceRepos:
+      - "*"
+  - name: workloads
+    namespace: openshift-gitops
+    description: Workload applications managed by the cluster factory.
+    sourceRepos:
+      - "*"
+
+applications: []

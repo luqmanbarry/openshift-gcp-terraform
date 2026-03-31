@@ -1,0 +1,11 @@
+clusterName: gcp-classic-101
+namespace: openshift-adp
+
+storageClassMapping:
+  standard-rwo: standard-rwo
+  balanced-rwo: balanced-rwo
+  default: standard-rwo
+
+enable: false
+backups:
+  - platform-apps-20260331000000

@@ -1,0 +1,85 @@
+namespace: ansible-automation-platform
+subscription:
+  name: ansible-automation-platform
+  packageName: ansible-automation-platform-operator
+  channel: stable-2.6
+  installPlanApproval: Manual
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+
+aap:
+  enabled: true
+  name: aap
+  no_log: true
+  image_pull_policy: IfNotPresent
+
+  api:
+    replicas: 2
+    resource_requirements:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+
+  redis:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+
+  database:
+    resource_requirements:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2
+        memory: 4Gi
+    storage_requirements:
+      requests:
+        storage: 100Gi
+
+  controller:
+    disabled: false
+    replicas: 2
+    create_preload_data: true
+    route_tls_termination_mechanism: Edge
+    ingress_type: Route
+    auto_upgrade: false
+    task_privileged: false
+    projects_persistence: false
+    admin_user: admin
+    node_selector: ""
+    tolerations: []
+    postgres_selector: ""
+    postgres_tolerations: []
+    topology_spread_constraints: ""
+    ee_extra_env:
+      - name: RECEPTOR_KUBE_SUPPORT_RECONNECT
+        value: enabled
+    web_resource_requirements:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2
+        memory: 4Gi
+    task_resource_requirements:
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+      limits:
+        cpu: 4
+        memory: 8Gi
+
+  hub:
+    disabled: true
+
+  eda:
+    disabled: true

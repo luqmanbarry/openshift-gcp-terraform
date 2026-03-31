@@ -1,0 +1,18 @@
+secretStoreName: platform-secrets
+pullSecretSMSecretName: ""
+resourceNamePrefix: day2-gitops
+patchSchedule: "0 5 * * *"
+ocpVersion: v4.18
+
+clusterName: gcp-classic-101
+
+registriesTrustedCerts: []
+registriesCertsConfigMap: registries-config-certs
+copyTrustedCABundleJob:
+  enabled: false
+
+allowList:
+  - ghcr.io
+  - gcr.io
+  - quay.io
+  - registry.redhat.io

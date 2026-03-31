@@ -1,0 +1,35 @@
+rootApplication:
+  name: example-cluster-root
+  namespace: openshift-gitops
+  destinationNamespace: openshift-gitops
+  project: default
+  path: gitops/overlays/cluster-applications
+git:
+  repoURL: https://github.com/your-org/osd-classic-gcp-terraform.git
+  targetRevision: main
+  username: ""
+  password: ""
+bootstrapValues:
+  clusterName: example-cluster
+  gitopsNamespace: openshift-gitops
+  git:
+    repoURL: https://github.com/your-org/osd-classic-gcp-terraform.git
+    targetRevision: main
+  projects:
+    - name: platform
+      namespace: openshift-gitops
+      description: Platform applications managed by the cluster factory.
+      sourceRepos:
+        - "*"
+    - name: workloads
+      namespace: openshift-gitops
+      description: Workload applications managed by the cluster factory.
+      sourceRepos:
+        - "*"
+  applications: []
+syncPolicy:
+  automated: true
+  prune: true
+  selfHeal: true
+  syncOptions:
+    - CreateNamespace=true

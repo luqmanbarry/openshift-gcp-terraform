@@ -1,0 +1,5 @@
+clusterName: "gcp-classic-101"
+provider: # Using Workload Identity (WIF)
+  gcpsm:
+    projectID: example-gcp-project
+    

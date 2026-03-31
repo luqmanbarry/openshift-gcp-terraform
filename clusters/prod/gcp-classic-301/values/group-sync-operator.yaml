@@ -1,0 +1,17 @@
+enabled: false
+namespace: group-sync-operator
+secretStoreName: platform-secrets
+provider:
+  type: github
+  name: github-group-sync
+  syncCronSchedule: "*/30 * * * *"
+  prune: false
+  credentials:
+    secretName: github-group-sync
+    data:
+      - secretKey: token
+        remoteKey: github-group-sync-token
+  github:
+    organization: your-org
+    teams:
+      - platform-admins

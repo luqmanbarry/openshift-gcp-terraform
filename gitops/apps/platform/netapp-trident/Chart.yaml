@@ -1,0 +1,6 @@
+apiVersion: v2
+name: netapp-trident
+description: Installs NetApp Trident and optional TridentOrchestrator resources.
+type: application
+version: 0.1.0
+appVersion: "1.0"

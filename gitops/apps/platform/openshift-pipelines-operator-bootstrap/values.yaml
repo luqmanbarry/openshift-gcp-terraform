@@ -1,0 +1,10 @@
+enabled: false
+operator:
+  namespace: openshift-operators
+  operator_group_name: openshift-pipelines
+  subscription_name: openshift-pipelines-operator-rh
+  subscription_channel: latest
+  subscription_source: redhat-operators
+  subscription_source_namespace: openshift-marketplace
+  install_plan_approval: Manual
+  package_name: openshift-pipelines-operator-rh

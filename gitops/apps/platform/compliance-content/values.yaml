@@ -1,0 +1,5 @@
+enabled: false
+namespace: openshift-compliance
+scan_setting_binding_name: compliance-default
+scan_settings_ref: default
+profiles: []

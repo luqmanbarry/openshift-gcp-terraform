@@ -1,0 +1,6 @@
+apiVersion: v2
+name: group-sync-operator
+description: Install and configure the Group Sync Operator with provider-neutral credentials sourced through ESO.
+type: application
+version: 1.0.0
+appVersion: "0.0.30"

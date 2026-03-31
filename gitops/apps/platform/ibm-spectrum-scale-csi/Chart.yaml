@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ibm-spectrum-scale-csi
+description: Manages IBM Spectrum Scale CSI custom resources and storage classes.
+type: application
+version: 0.1.0
+appVersion: "1.0"

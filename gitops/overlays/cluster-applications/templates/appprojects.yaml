@@ -1,0 +1,24 @@
+{{- range .Values.projects }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ index . "name" }}
+  namespace: {{ default "openshift-gitops" (index . "namespace") }}
+spec:
+  description: {{ index . "description" | quote }}
+  sourceRepos:
+{{- range (default (list "*") (index . "sourceRepos")) }}
+    - {{ . | quote }}
+{{- end }}
+  destinations:
+{{- range (default (list (dict "namespace" "*" "server" "https://kubernetes.default.svc")) (index . "destinations")) }}
+    - namespace: {{ index . "namespace" | quote }}
+      server: {{ index . "server" | quote }}
+{{- end }}
+  clusterResourceWhitelist:
+{{- range (default (list (dict "group" "*" "kind" "*")) (index . "clusterResourceWhitelist")) }}
+    - group: {{ index . "group" | quote }}
+      kind: {{ index . "kind" | quote }}
+{{- end }}
+{{- end }}

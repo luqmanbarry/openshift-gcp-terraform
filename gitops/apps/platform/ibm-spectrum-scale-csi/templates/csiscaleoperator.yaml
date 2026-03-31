@@ -1,0 +1,17 @@
+{{- if .Values.csiScaleOperator.enabled }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace }}
+  labels:
+    openshift.io/cluster-monitoring: "true"
+---
+apiVersion: csi.ibm.com/v1
+kind: CSIScaleOperator
+metadata:
+  name: {{ .Values.csiScaleOperator.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+{{ toYaml .Values.csiScaleOperator.spec | indent 2 }}
+{{- end }}

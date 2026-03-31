@@ -1,0 +1,5 @@
+name: system
+replicas: 3
+machine_type: n4-standard-8
+labels:
+  node-role.kubernetes.io/infra: ""

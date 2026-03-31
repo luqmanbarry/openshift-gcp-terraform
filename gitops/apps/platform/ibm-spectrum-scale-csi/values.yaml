@@ -1,0 +1,8 @@
+namespace: ibm-spectrum-scale-csi-driver
+
+csiScaleOperator:
+  enabled: false
+  name: ibm-spectrum-scale-csi
+  spec: {}
+
+storageClasses: []

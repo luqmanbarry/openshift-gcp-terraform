@@ -1,0 +1,75 @@
+# Source: https://github.com/grafana/tempo-operator/blob/main/docs/spec/tempo.grafana.com_tempostacks.yaml
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: {{ .Values.operators.tempo.name }}
+  namespace: {{ .Values.operators.tempo.namespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "44"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "44"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  hashRing:
+    memberlist:
+      instanceAddrType: "podIP"      # Docs: https://access.redhat.com/solutions/6998362, 
+  observability:
+    metrics:
+      createPrometheusRules: true
+      createServiceMonitors: true
+  tracing:
+    jaeger_agent_endpoint: 'localhost:6831'
+  replicationFactor: 1
+  storageSize: 25Gi 
+  storage:
+    secret: 
+      name: {{ .Values.operators.tempo.gcs.secretName }}
+      type: gcs
+  template:
+    gateway: # Gateway defines the tempo gateway spec.
+      enabled: true
+      component:
+        replicas: 1
+      ingress:
+        route:                          
+          termination: "edge"           
+        type: "route"
+    queryFrontend:
+      component:
+        replicas: 1
+      jaegerQuery:
+        enabled: true                 
+        monitorTab:
+          enabled: true 
+          prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091 
+    compactor:
+      replicas: 1
+    distributor:
+      component:
+        replicas: 1
+    ingester:
+      replicas: 1
+    querier:
+      replicas: 1
+  resources: 
+    total:
+      limits:
+        memory: 6Gi
+        cpu: 2
+  retention:                             
+    global:                             
+      traces: "720h"                 
+  storageSize: "25Gi"
+  tenants:
+    mode: openshift 
+    authentication:
+    {{ range $tenant := .Values.tenants }}  
+      - tenantName: {{ $tenant.name | lower }} 
+        tenantId: {{ $tenant.name | lower | sha256sum }}
+    {{ range $rollMember := $tenant.smcp.rollMembers }} 
+      - tenantName: {{ $rollMember | lower }} 
+        tenantId: {{ $rollMember | lower | sha256sum }}
+    {{ end }}
+    {{ end }}

@@ -1,0 +1,17 @@
+{{- if .Values.tridentOrchestrator.enabled }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.tridentOrchestrator.namespace }}
+{{- if .Values.tridentOrchestrator.enabled }}
+---
+apiVersion: trident.netapp.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: {{ .Values.tridentOrchestrator.name }}
+  namespace: {{ .Values.operator.namespace }}
+spec:
+{{ toYaml .Values.tridentOrchestrator.spec | indent 2 }}
+{{- end }}
+{{- end }}

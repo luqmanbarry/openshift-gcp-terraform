@@ -1,0 +1,8 @@
+{{- if .Values.install.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.install.namespace }}
+  labels:
+    openshift.io/cluster-monitoring: "true"
+{{- end }}

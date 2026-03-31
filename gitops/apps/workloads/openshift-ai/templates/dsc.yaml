@@ -1,0 +1,11 @@
+{{- if .Values.dsc.enabled }}
+apiVersion: datasciencecluster.opendatahub.io/v1
+kind: DataScienceCluster
+metadata:
+  name: {{ .Values.dsc.name }}
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  components:
+{{ toYaml .Values.dsc.components | indent 4 }}
+{{- end }}

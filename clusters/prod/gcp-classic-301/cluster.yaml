@@ -1,0 +1,71 @@
+cluster_name: gcp-classic-301
+class_name: prod
+gcp_region: us-south1
+gcp_project_id: ""
+gcp_default_zone: us-south1-a
+business_metadata:
+  owner: prod-platform-team
+  business_unit: retail
+  cost_center: "1234567"
+network:
+  vpc_name: ""
+  vpc_project_id: ""
+  psc_subnet_name: ""
+  vpc_cidr_block: 10.0.0.0/8
+  master_subnet_name: ""
+  worker_subnet_name: ""
+  master_subnet_cidr: 10.90.1.0/24
+  worker_subnet_cidr: 10.90.2.0/24
+  availability_zones:
+    - us-south1-a
+    - us-south1-b
+    - us-south1-c
+  base_dns_domain: ""
+  base_dns_zone_project: ""
+  dns_ttl: 3600
+  inbound_firewall_rules:
+    - name: allow-inbound-from-ops-ocp
+      source_cidrs:
+        - 10.254.0.0/24
+      port_ranges:
+        - 30000-32900
+      protocol: tcp
+      direction: INGRESS
+infrastructure:
+  create_gcp_resources: false
+  vpc_routing_mode: REGIONAL
+cluster:
+  private: true
+  private_service_connect_enabled: true
+  machine_type: n4-standard-8
+  worker_node_replicas: 6
+  autoscaling_enabled: true
+  min_replicas: 6
+  max_replicas: 18
+  pod_cidr: 10.128.0.0/14
+  service_cidr: 172.30.0.0/16
+  details_secret_name: openshift-prod-gcp-classic-301-cluster-details
+identity:
+  gcp_workload_identity:
+    enabled: true
+    cluster_service_account_name: osd-ccs-admin
+secrets:
+  ocm_token_secret_name: osd-gcp-ocm-token
+  pull_secret_secret_name: osd-gcp-pull-secret
+  pull_secret_secret_project: ""
+  git_token_secret_name: git-github-pat
+  git_token_secret_project: ""
+proxy:
+  enable: false
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+  additional_trust_bundle: ""
+acm:
+  enabled: true
+  hub_cluster_project: ""
+  hub_cluster_secret_name: ""
+gitops:
+  bootstrap_enabled: true
+  repository_url: ""
+  target_revision: main

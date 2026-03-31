@@ -1,0 +1,6 @@
+apiVersion: v2
+name: service-account-annotations
+description: Manage annotations on Kubernetes service accounts for GCP-integrated workloads.
+type: application
+version: 0.1.0
+appVersion: "1.0"

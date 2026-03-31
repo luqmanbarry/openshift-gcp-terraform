@@ -1,0 +1,31 @@
+{{- $shared := .Values.sharedTenantArgoCD | default dict }}
+{{- $tenants := .Values.tenants | default list }}
+{{- if $shared.enabled }}
+{{- range $tenant := $tenants }}
+{{- if $tenant.enabled }}
+{{- $projectName := default $tenant.name $tenant.project_name }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $projectName }}
+  namespace: {{ $shared.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "34"
+spec:
+  description: {{ default (printf "Shared tenant project for %s" $tenant.name) $tenant.description | quote }}
+  sourceRepos:
+{{ toYaml ($tenant.source_repos | default list) | indent 4 }}
+  destinations:
+{{- range $namespace := $tenant.namespaces }}
+    - namespace: {{ $namespace }}
+      server: https://kubernetes.default.svc
+{{- end }}
+  clusterResourceWhitelist: []
+  sourceNamespaces:
+{{- range $namespace := $tenant.namespaces }}
+    - {{ $namespace }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

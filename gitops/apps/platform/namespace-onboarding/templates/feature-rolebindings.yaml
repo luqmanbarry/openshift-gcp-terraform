@@ -1,0 +1,32 @@
+{{- range $ns := .Values.namespaces }}
+{{- $features := default dict $ns.features }}
+{{- range $featureName, $featureConfig := $.Values.featureCatalog }}
+{{- $tenantFeature := index $features $featureName | default dict }}
+{{- if and (kindIs "map" $tenantFeature) (default false $tenantFeature.enabled) }}
+{{- range $binding := default list $tenantFeature.roleBindings }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ default (printf "%s-%s-binding" $featureName $binding.role) $binding.name }}
+  namespace: {{ $ns.name }}
+subjects:
+{{- if $binding.subjects }}
+{{ toYaml $binding.subjects | indent 2 }}
+{{- else if $binding.group }}
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: {{ $binding.group }}
+{{- else if $binding.serviceAccount }}
+  - kind: ServiceAccount
+    name: {{ $binding.serviceAccount.name }}
+    namespace: {{ default $ns.name $binding.serviceAccount.namespace }}
+{{- end }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $binding.role }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

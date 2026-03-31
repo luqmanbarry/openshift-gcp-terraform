@@ -1,0 +1,11 @@
+{{- if .Values.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    openshift.io/cluster-monitoring: "true"
+    pod-security.kubernetes.io/enforce: privileged
+  annotations:
+    openshift.io/node-selector: ""
+  name: {{ .Values.namespace }}
+{{- end }}

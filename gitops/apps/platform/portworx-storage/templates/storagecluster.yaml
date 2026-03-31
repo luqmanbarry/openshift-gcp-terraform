@@ -1,0 +1,21 @@
+{{- if .Values.storageCluster.enabled }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace }}
+  labels:
+    openshift.io/cluster-monitoring: "true"
+---
+apiVersion: core.libopenstorage.org/v1
+kind: StorageCluster
+metadata:
+  name: {{ .Values.storageCluster.name }}
+  namespace: {{ .Values.namespace }}
+{{- with .Values.storageCluster.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{ toYaml .Values.storageCluster.spec | indent 2 }}
+{{- end }}

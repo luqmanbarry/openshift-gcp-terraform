@@ -1,0 +1,8 @@
+{{- range $machineSet := .Values.machineSets }}
+---
+{{ toYaml $machineSet }}
+{{- end }}
+{{- range $autoscaler := .Values.machineAutoscalers }}
+---
+{{ toYaml $autoscaler }}
+{{- end }}

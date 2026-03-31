@@ -1,0 +1,67 @@
+{{- if .Values.enabled }}
+apiVersion: redhatcop.redhat.io/v1alpha1
+kind: GroupSync
+metadata:
+  name: {{ .Values.provider.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  schedule: {{ .Values.provider.syncCronSchedule | quote }}
+  providers:
+    - name: {{ .Values.provider.name }}
+{{- if eq .Values.provider.type "github" }}
+      github:
+        credentialsSecret:
+          name: {{ .Values.provider.credentials.secretName }}
+          namespace: {{ .Values.namespace }}
+        prune: {{ .Values.provider.prune }}
+        organization: {{ .Values.provider.github.organization | quote }}
+        teams:
+{{ toYaml .Values.provider.github.teams | indent 10 }}
+{{- else if eq .Values.provider.type "gitlab" }}
+      gitlab:
+        credentialsSecret:
+          name: {{ .Values.provider.credentials.secretName }}
+          namespace: {{ .Values.namespace }}
+        prune: {{ .Values.provider.prune }}
+        url: {{ .Values.provider.gitlab.url | quote }}
+        groups:
+{{ toYaml .Values.provider.gitlab.groups | indent 10 }}
+{{- else if eq .Values.provider.type "keycloak" }}
+      keycloak:
+        credentialsSecret:
+          name: {{ .Values.provider.credentials.secretName }}
+          namespace: {{ .Values.namespace }}
+        prune: {{ .Values.provider.prune }}
+        url: {{ .Values.provider.keycloak.url | quote }}
+        realm: {{ .Values.provider.keycloak.realm | quote }}
+        groups:
+{{ toYaml .Values.provider.keycloak.groups | indent 10 }}
+{{- else if eq .Values.provider.type "okta" }}
+      okta:
+        credentialsSecret:
+          name: {{ .Values.provider.credentials.secretName }}
+          namespace: {{ .Values.namespace }}
+        prune: {{ .Values.provider.prune }}
+        url: {{ .Values.provider.okta.url | quote }}
+        groups:
+{{ toYaml .Values.provider.okta.groups | indent 10 }}
+{{- else if eq .Values.provider.type "azure" }}
+      azure:
+        credentialsSecret:
+          name: {{ .Values.provider.credentials.secretName }}
+          namespace: {{ .Values.namespace }}
+          key: AZURE_CLIENT_SECRET
+        prune: {{ .Values.provider.prune }}
+        tenantID: {{ .Values.provider.azure.tenantID | quote }}
+        groups:
+{{ toYaml .Values.provider.azure.groups | indent 10 }}
+{{- else if eq .Values.provider.type "ibmsecurityverify" }}
+      ibmsecurityverify:
+        credentialsSecret:
+          name: {{ .Values.provider.credentials.secretName }}
+          namespace: {{ .Values.namespace }}
+        tenantUrl: {{ .Values.provider.ibmsecurityverify.tenantUrl | quote }}
+        groups:
+{{ toYaml .Values.provider.ibmsecurityverify.groups | indent 10 }}
+{{- end }}
+{{- end }}

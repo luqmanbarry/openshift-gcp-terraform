@@ -1,0 +1,12 @@
+{{- range .Values.namespaces }}
+{{- if .limitRange }}
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: {{ default (printf "%s-defaults" .name) .limitRange.name }}
+  namespace: {{ .name }}
+spec:
+{{ toYaml (omit .limitRange "name") | indent 2 }}
+{{- end }}
+{{- end }}
